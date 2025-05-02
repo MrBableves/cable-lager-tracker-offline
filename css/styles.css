@@ -15,7 +15,7 @@
   --border-color: #e2e8f0;
   --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --transition: all 0.2s ease;
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 }
 
 * {
@@ -66,18 +66,24 @@ header {
   gap: 0.75rem;
 }
 
-/* Navigation */
+/* Navigation - Fixed */
 nav {
   margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-color);
+  z-index: 100;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid var(--border-color);
 }
 
 .tabs {
   display: flex;
   list-style: none;
-  border-bottom: 2px solid var(--border-color);
-  overflow-x: auto;
   padding-bottom: 0;
   gap: 0.5rem;
+  overflow: visible;
+  flex-wrap: wrap;
 }
 
 .tab {
@@ -88,7 +94,6 @@ nav {
   margin-bottom: -2px;
   font-weight: 500;
   transition: var(--transition);
-  white-space: nowrap;
   border-top-left-radius: var(--radius);
   border-top-right-radius: var(--radius);
 }
@@ -112,7 +117,7 @@ nav {
   padding: 0.5rem 1rem;
   border: 1px solid transparent;
   border-radius: var(--radius);
-  background-color: var(--bg-color);
+  background-color: var(--bg-secondary);
   color: var(--text-color);
   font-size: 0.875rem;
   font-weight: 500;
@@ -129,6 +134,7 @@ nav {
 
 .btn:hover {
   background-color: var(--bg-secondary);
+  transform: translateY(-1px);
 }
 
 .btn-primary {
@@ -139,6 +145,7 @@ nav {
 .btn-primary:hover {
   background-color: var(--secondary-color);
   filter: brightness(1.05);
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
 }
 
 .btn-warning {
@@ -182,11 +189,12 @@ label {
 .number-input,
 .select-input {
   width: 100%;
-  padding: 0.625rem 0.75rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   font-size: 1rem;
   transition: var(--transition);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .text-input:focus,
@@ -198,7 +206,7 @@ label {
 }
 
 .search-input {
-  padding: 0.625rem 1rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   width: 250px;
@@ -208,6 +216,7 @@ label {
   background-repeat: no-repeat;
   background-size: 16px;
   padding-left: 32px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .small-input {
@@ -216,16 +225,18 @@ label {
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .text-area {
   width: 100%;
   height: 100px;
-  padding: 0.625rem 0.75rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   resize: vertical;
   font-family: inherit;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .file-input {
@@ -249,17 +260,18 @@ label {
   margin-bottom: 2rem;
   border-radius: var(--radius);
   box-shadow: var(--box-shadow);
+  background-color: white;
 }
 
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  margin-top: 1rem;
+  margin-top: 0;
 }
 
 th, td {
-  padding: 0.875rem 1rem;
+  padding: 1rem;
   text-align: left;
 }
 
@@ -304,9 +316,10 @@ tr:hover {
   max-width: 600px;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background-color: var(--bg-secondary);
+  background-color: white;
   border-radius: var(--radius);
   box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
 }
 
 .checkout-history {
@@ -332,18 +345,20 @@ tr:hover {
   font-size: 1.25rem;
   letter-spacing: 1px;
   background-color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .barcode-result {
   margin: 1.5rem 0;
   padding: 1.5rem;
-  background-color: var(--bg-secondary);
+  background-color: white;
   border-radius: var(--radius);
   min-height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
 }
 
 .barcode-registration {
@@ -351,7 +366,7 @@ tr:hover {
   padding: 1.5rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
-  background-color: var(--bg-secondary);
+  background-color: white;
   box-shadow: var(--box-shadow);
 }
 
@@ -365,8 +380,9 @@ tr:hover {
 .import-section, .export-section {
   padding: 1.5rem;
   border-radius: var(--radius);
-  background-color: var(--bg-secondary);
+  background-color: white;
   box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
 }
 
 /* Modal */
@@ -389,7 +405,8 @@ tr:hover {
   padding: 2rem;
   border-radius: var(--radius);
   max-width: 500px;
-  box-shadow: var(--box-shadow);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
   animation: modalOpen 0.3s ease;
 }
 
@@ -459,10 +476,5 @@ footer {
   
   .search-input {
     width: 100%;
-  }
-  
-  .tabs {
-    flex-wrap: nowrap;
-    overflow-x: auto;
   }
 }

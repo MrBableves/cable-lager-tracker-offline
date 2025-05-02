@@ -28,6 +28,9 @@ function initializeTabs() {
       this.classList.add('active');
       const tabId = this.getAttribute('data-tab');
       document.getElementById(tabId).classList.add('active');
+      
+      // Scroll to top when changing tabs
+      window.scrollTo(0, 0);
     });
   });
 }

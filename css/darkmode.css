@@ -14,6 +14,11 @@
   --border-color: #334155;
 }
 
+.dark-mode nav {
+  background-color: var(--bg-color);
+  border-bottom-color: var(--border-color);
+}
+
 .dark-mode .btn {
   background-color: var(--bg-secondary);
   color: var(--text-color);
@@ -32,6 +37,7 @@
 .dark-mode .btn-primary:hover {
   background-color: var(--secondary-color);
   filter: brightness(1.1);
+  box-shadow: 0 4px 6px -1px rgba(96, 165, 250, 0.4);
 }
 
 .dark-mode .modal-content {
@@ -48,6 +54,7 @@
   background-color: rgba(30, 41, 59, 0.7);
 }
 
+.dark-mode .table-container,
 .dark-mode .barcode-result,
 .dark-mode .import-section, 
 .dark-mode .export-section, 
