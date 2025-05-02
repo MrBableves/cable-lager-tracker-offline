@@ -1,26 +1,289 @@
+
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>cable-lager-tracker-offline</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cable Lager Tracker</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/darkmode.css">
+  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+</head>
+<body class="light-mode">
+  <div class="container">
+    <header>
+      <div class="logo">
+        <h1 id="main-title">Cable Inventory System</h1>
+      </div>
+      <div class="header-controls">
+        <button id="language-toggle" class="btn">
+          <span id="language-icon" class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+          </span>
+          <span id="language-text">DE</span>
+        </button>
+        <button id="theme-toggle" class="btn">
+          <span id="theme-icon" class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          </span>
+        </button>
+      </div>
+    </header>
 
-    <meta property="og:title" content="cable-lager-tracker-offline" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <nav>
+      <ul class="tabs">
+        <li><a href="#" class="tab active" data-tab="inventory" id="tab-inventory">Inventory</a></li>
+        <li><a href="#" class="tab" data-tab="low-stock" id="tab-low-stock">Low Stock</a></li>
+        <li><a href="#" class="tab" data-tab="checkout" id="tab-checkout">Cable Checkout</a></li>
+        <li><a href="#" class="tab" data-tab="scan" id="tab-scan">Barcode Scan</a></li>
+        <li><a href="#" class="tab" data-tab="import-export" id="tab-import-export">Import/Export</a></li>
+      </ul>
+    </nav>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+    <main>
+      <!-- Inventory Section -->
+      <section id="inventory" class="tab-content active">
+        <div class="section-header">
+          <h2 id="inventory-title">Cable Inventory</h2>
+          <div class="controls">
+            <input type="text" id="inventory-search" placeholder="Search cables..." class="search-input">
+            <button id="add-cable-btn" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              <span id="add-btn-text">Add Cable</span>
+            </button>
+          </div>
+        </div>
 
-  <body>
-    <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+        <div class="table-container">
+          <table id="inventory-table">
+            <thead>
+              <tr>
+                <th id="th-id">ID</th>
+                <th id="th-type">Type</th>
+                <th id="th-length">Length (m)</th>
+                <th id="th-color">Color</th>
+                <th id="th-stock">Stock</th>
+                <th id="th-location">Location</th>
+                <th id="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Low Stock Section -->
+      <section id="low-stock" class="tab-content">
+        <div class="section-header">
+          <h2 id="low-stock-title">Low Stock Items</h2>
+          <div class="controls">
+            <input type="number" id="low-stock-threshold" min="1" value="5" class="small-input">
+            <label for="low-stock-threshold" id="threshold-label">Threshold</label>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="low-stock-table">
+            <thead>
+              <tr>
+                <th id="ls-th-id">ID</th>
+                <th id="ls-th-type">Type</th>
+                <th id="ls-th-stock">Stock</th>
+                <th id="ls-th-threshold">Threshold</th>
+                <th id="ls-th-action">Action</th>
+              </tr>
+            </thead>
+            <tbody id="low-stock-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Checkout Section -->
+      <section id="checkout" class="tab-content">
+        <div class="section-header">
+          <h2 id="checkout-title">Cable Checkout</h2>
+        </div>
+
+        <div class="checkout-form">
+          <div class="form-group">
+            <label for="checkout-cable" id="checkout-cable-label">Select Cable:</label>
+            <select id="checkout-cable" class="select-input"></select>
+          </div>
+          <div class="form-group">
+            <label for="checkout-quantity" id="checkout-quantity-label">Quantity:</label>
+            <input type="number" id="checkout-quantity" min="1" value="1" class="number-input">
+          </div>
+          <div class="form-group">
+            <label for="checkout-recipient" id="checkout-recipient-label">Recipient Name:</label>
+            <input type="text" id="checkout-recipient" class="text-input">
+          </div>
+          <div class="form-group">
+            <label for="checkout-notes" id="checkout-notes-label">Notes:</label>
+            <textarea id="checkout-notes" class="text-area"></textarea>
+          </div>
+          <button id="checkout-btn" class="btn btn-primary">
+            <span id="checkout-btn-text">Checkout</span>
+          </button>
+        </div>
+
+        <div class="table-container checkout-history">
+          <h3 id="checkout-history-title">Checkout History</h3>
+          <table id="checkout-history-table">
+            <thead>
+              <tr>
+                <th id="ch-th-date">Date</th>
+                <th id="ch-th-cable">Cable</th>
+                <th id="ch-th-quantity">Quantity</th>
+                <th id="ch-th-recipient">Recipient</th>
+                <th id="ch-th-notes">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="checkout-history-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Barcode Scan Section -->
+      <section id="scan" class="tab-content">
+        <div class="section-header">
+          <h2 id="scan-title">Barcode Scanner</h2>
+        </div>
+
+        <div class="scan-container">
+          <div class="barcode-input-container">
+            <input type="text" id="barcode-input" placeholder="Scan or type barcode..." class="barcode-input">
+            <button id="scan-button" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+              <span id="scan-button-text">Scan</span>
+            </button>
+          </div>
+          <div class="barcode-result">
+            <div id="barcode-result-message"></div>
+            <div id="barcode-scanned-item" class="hidden"></div>
+          </div>
+
+          <div class="barcode-registration" id="barcode-registration">
+            <h3 id="register-barcode-title">Register New Barcode</h3>
+            <div class="form-group">
+              <label for="barcode-cable-select" id="barcode-cable-select-label">Cable Type:</label>
+              <select id="barcode-cable-select" class="select-input"></select>
+            </div>
+            <div class="form-group">
+              <label for="barcode-value" id="barcode-value-label">Barcode Value:</label>
+              <input type="text" id="barcode-value" class="text-input" readonly>
+            </div>
+            <button id="register-barcode-btn" class="btn btn-primary">
+              <span id="register-barcode-btn-text">Register Barcode</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Import/Export Section -->
+      <section id="import-export" class="tab-content">
+        <div class="section-header">
+          <h2 id="import-export-title">Import/Export Data</h2>
+        </div>
+
+        <div class="import-export-container">
+          <div class="import-section">
+            <h3 id="import-title">Import CSV</h3>
+            <div class="import-options">
+              <div class="form-group">
+                <label id="import-type-label">Select data to import:</label>
+                <select id="import-type" class="select-input">
+                  <option value="inventory">Inventory</option>
+                  <option value="checkout">Checkout History</option>
+                  <option value="barcodes">Barcodes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="import-file" id="import-file-label">Choose CSV file:</label>
+                <input type="file" id="import-file" accept=".csv" class="file-input">
+              </div>
+              <button id="import-btn" class="btn btn-primary">
+                <span id="import-btn-text">Import Data</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="export-section">
+            <h3 id="export-title">Export CSV</h3>
+            <div class="export-options">
+              <div class="form-group">
+                <label id="export-type-label">Select data to export:</label>
+                <select id="export-type" class="select-input">
+                  <option value="inventory">Inventory</option>
+                  <option value="checkout">Checkout History</option>
+                  <option value="barcodes">Barcodes</option>
+                </select>
+              </div>
+              <button id="export-btn" class="btn btn-primary">
+                <span id="export-btn-text">Export Data</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Add/Edit Cable Modal -->
+      <div id="cable-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="modal-title">Add New Cable</h2>
+            <button id="close-modal" class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <form id="cable-form">
+              <div class="form-group">
+                <label for="cable-id" id="cable-id-label">Cable ID:</label>
+                <input type="text" id="cable-id" required class="text-input">
+              </div>
+              <div class="form-group">
+                <label for="cable-type" id="cable-type-label">Cable Type:</label>
+                <input type="text" id="cable-type" required class="text-input">
+              </div>
+              <div class="form-group">
+                <label for="cable-length" id="cable-length-label">Length (m):</label>
+                <input type="number" id="cable-length" step="0.1" min="0" required class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="cable-color" id="cable-color-label">Color:</label>
+                <input type="text" id="cable-color" class="text-input">
+              </div>
+              <div class="form-group">
+                <label for="cable-stock" id="cable-stock-label">Stock:</label>
+                <input type="number" id="cable-stock" min="0" required class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="cable-location" id="cable-location-label">Storage Location:</label>
+                <input type="text" id="cable-location" class="text-input">
+              </div>
+              <input type="hidden" id="edit-mode" value="add">
+              <div class="modal-footer">
+                <button type="submit" id="save-cable" class="btn btn-primary">
+                  <span id="save-cable-text">Save</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+    <footer>
+      <p>© 2025 Cable Inventory Management System - <span id="version">v1.0.0</span></p>
+    </footer>
+  </div>
+
+  <script src="js/language.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/inventory.js"></script>
+  <script src="js/low-stock.js"></script>
+  <script src="js/checkout.js"></script>
+  <script src="js/barcode.js"></script>
+  <script src="js/import-export.js"></script>
+  <script src="js/app.js"></script>
+</body>
 </html>

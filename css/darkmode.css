@@ -1,0 +1,55 @@
+
+/* Dark Mode Styles */
+.dark-mode {
+  --primary-color: #90cdf4;
+  --secondary-color: #63b3ed;
+  --accent-color: #4299e1;
+  --danger-color: #fc8181;
+  --success-color: #68d391;
+  --warning-color: #f6ad55;
+  --text-color: #f7fafc;
+  --text-light: #a0aec0;
+  --bg-color: #1a202c;
+  --bg-secondary: #2d3748;
+  --border-color: #4a5568;
+}
+
+.dark-mode .btn {
+  background-color: var(--bg-secondary);
+  color: var(--text-color);
+}
+
+.dark-mode .btn:hover {
+  background-color: #4a5568;
+}
+
+.dark-mode .btn-primary {
+  background-color: var(--primary-color);
+  color: #1a202c;
+  border-color: var(--primary-color);
+}
+
+.dark-mode .btn-primary:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.dark-mode .modal-content {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+}
+
+.dark-mode th {
+  background-color: var(--bg-secondary);
+}
+
+.dark-mode tr:hover {
+  background-color: rgba(74, 85, 104, 0.5);
+}
+
+.dark-mode .barcode-result,
+.dark-mode .import-section, 
+.dark-mode .export-section, 
+.dark-mode .barcode-registration {
+  background-color: var(--bg-secondary);
+}
