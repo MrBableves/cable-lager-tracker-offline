@@ -1,21 +1,21 @@
 
 /* Base Styles */
 :root {
-  --primary-color: #2c5282;
-  --secondary-color: #4299e1;
-  --accent-color: #63b3ed;
-  --danger-color: #e53e3e;
-  --success-color: #48bb78;
-  --warning-color: #f6ad55;
-  --text-color: #2d3748;
-  --text-light: #718096;
+  --primary-color: #3b82f6;
+  --secondary-color: #60a5fa;
+  --accent-color: #93c5fd;
+  --danger-color: #ef4444;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --text-color: #1e293b;
+  --text-light: #64748b;
   --text-white: #fff;
-  --bg-color: #f7fafc;
-  --bg-secondary: #edf2f7;
+  --bg-color: #f8fafc;
+  --bg-secondary: #f1f5f9;
   --border-color: #e2e8f0;
-  --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --transition: all 0.3s ease;
-  --radius: 0.375rem;
+  --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s ease;
+  --radius: 0.5rem;
 }
 
 * {
@@ -25,7 +25,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   color: var(--text-color);
   background-color: var(--bg-color);
@@ -34,38 +34,41 @@ body {
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 1.25rem;
 }
 
 h1, h2, h3 {
-  color: var(--primary-color);
+  color: var(--text-color);
   margin-bottom: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1.25rem 0;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .logo h1 {
   font-size: 1.5rem;
   margin-bottom: 0;
+  font-weight: 700;
 }
 
 .header-controls {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 /* Navigation */
 nav {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .tabs {
@@ -73,7 +76,8 @@ nav {
   list-style: none;
   border-bottom: 2px solid var(--border-color);
   overflow-x: auto;
-  padding-bottom: 1px;
+  padding-bottom: 0;
+  gap: 0.5rem;
 }
 
 .tab {
@@ -85,15 +89,19 @@ nav {
   font-weight: 500;
   transition: var(--transition);
   white-space: nowrap;
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
 }
 
 .tab:hover {
   color: var(--primary-color);
+  background-color: rgba(59, 130, 246, 0.05);
 }
 
 .tab.active {
   color: var(--primary-color);
   border-bottom: 2px solid var(--primary-color);
+  font-weight: 600;
 }
 
 /* Buttons */
@@ -102,7 +110,7 @@ nav {
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
   border-radius: var(--radius);
   background-color: var(--bg-color);
   color: var(--text-color);
@@ -110,6 +118,7 @@ nav {
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn svg {
@@ -125,24 +134,21 @@ nav {
 .btn-primary {
   background-color: var(--primary-color);
   color: var(--text-white);
-  border-color: var(--primary-color);
 }
 
 .btn-primary:hover {
   background-color: var(--secondary-color);
-  border-color: var(--secondary-color);
+  filter: brightness(1.05);
 }
 
 .btn-warning {
   background-color: var(--warning-color);
   color: var(--text-white);
-  border-color: var(--warning-color);
 }
 
 .btn-danger {
   background-color: var(--danger-color);
   color: var(--text-white);
-  border-color: var(--danger-color);
 }
 
 .icon {
@@ -162,7 +168,7 @@ nav {
 
 /* Form Elements */
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 label {
@@ -176,7 +182,7 @@ label {
 .number-input,
 .select-input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.625rem 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   font-size: 1rem;
@@ -188,20 +194,25 @@ label {
 .select-input:focus {
   outline: none;
   border-color: var(--secondary-color);
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
 .search-input {
-  padding: 0.5rem;
+  padding: 0.625rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   width: 250px;
   font-size: 0.875rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.3-4.3'%3E%3C/path%3E%3C/svg%3E");
+  background-position: 10px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-left: 32px;
 }
 
 .small-input {
   width: 80px;
-  padding: 0.5rem;
+  padding: 0.625rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   text-align: center;
@@ -210,20 +221,22 @@ label {
 .text-area {
   width: 100%;
   height: 100px;
-  padding: 0.5rem;
+  padding: 0.625rem 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   resize: vertical;
+  font-family: inherit;
 }
 
 .file-input {
   width: 100%;
-  padding: 0.5rem 0;
+  padding: 0.625rem 0;
 }
 
 /* Tab Content */
 .tab-content {
   display: none;
+  animation: fadeIn 0.3s ease-in;
 }
 
 .tab-content.active {
@@ -234,35 +247,48 @@ label {
 .table-container {
   overflow-x: auto;
   margin-bottom: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--box-shadow);
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin-top: 1rem;
 }
 
 th, td {
-  padding: 0.75rem;
+  padding: 0.875rem 1rem;
   text-align: left;
-  border-bottom: 1px solid var(--border-color);
 }
 
 th {
   background-color: var(--bg-secondary);
   font-weight: 600;
   color: var(--text-color);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+tr:not(:last-child) td {
+  border-bottom: 1px solid var(--border-color);
+}
+
+table tbody tr {
+  transition: var(--transition);
 }
 
 tr:hover {
-  background-color: rgba(237, 242, 247, 0.5);
+  background-color: rgba(241, 245, 249, 0.5);
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
 }
 
@@ -277,6 +303,10 @@ tr:hover {
 .checkout-form {
   max-width: 600px;
   margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius);
+  box-shadow: var(--box-shadow);
 }
 
 .checkout-history {
@@ -290,28 +320,30 @@ tr:hover {
 
 .barcode-input-container {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .barcode-input {
   flex: 1;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border: 2px solid var(--border-color);
   border-radius: var(--radius);
   font-size: 1.25rem;
   letter-spacing: 1px;
+  background-color: white;
 }
 
 .barcode-result {
   margin: 1.5rem 0;
-  padding: 1rem;
+  padding: 1.5rem;
   background-color: var(--bg-secondary);
   border-radius: var(--radius);
   min-height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  box-shadow: var(--box-shadow);
 }
 
 .barcode-registration {
@@ -320,6 +352,7 @@ tr:hover {
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
   background-color: var(--bg-secondary);
+  box-shadow: var(--box-shadow);
 }
 
 /* Import/Export Section */
@@ -331,9 +364,9 @@ tr:hover {
 
 .import-section, .export-section {
   padding: 1.5rem;
-  border: 1px solid var(--border-color);
   border-radius: var(--radius);
   background-color: var(--bg-secondary);
+  box-shadow: var(--box-shadow);
 }
 
 /* Modal */
@@ -347,12 +380,13 @@ tr:hover {
   height: 100%;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
   background-color: var(--bg-color);
   margin: 10% auto;
-  padding: 1.5rem;
+  padding: 2rem;
   border-radius: var(--radius);
   max-width: 500px;
   box-shadow: var(--box-shadow);
@@ -398,6 +432,11 @@ footer {
 @keyframes modalOpen {
   from {opacity: 0; transform: translateY(-20px);}
   to {opacity: 1; transform: translateY(0);}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
 }
 
 /* Responsive Styles */

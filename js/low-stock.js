@@ -16,6 +16,7 @@ function updateLowStockTable() {
     cell.colSpan = 5;
     cell.textContent = getText('no_low_stock_items');
     cell.style.textAlign = 'center';
+    cell.style.padding = '2rem 1rem';
     row.appendChild(cell);
     tableBody.appendChild(row);
     return;
@@ -34,8 +35,25 @@ function updateLowStockTable() {
     
     // Stock cell
     const stockCell = document.createElement('td');
-    stockCell.textContent = item.stock;
-    stockCell.className = item.stock === 0 ? 'stock-danger' : 'stock-warning';
+    
+    // Create a stock badge with appropriate styling
+    const stockBadge = document.createElement('span');
+    stockBadge.textContent = item.stock;
+    stockBadge.style.padding = '0.25rem 0.75rem';
+    stockBadge.style.borderRadius = '9999px';
+    stockBadge.style.fontSize = '0.875rem';
+    stockBadge.style.fontWeight = 'bold';
+    stockBadge.style.display = 'inline-block';
+    
+    if (item.stock === 0) {
+      stockBadge.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+      stockBadge.style.color = 'var(--danger-color)';
+    } else {
+      stockBadge.style.backgroundColor = 'rgba(245, 158, 11, 0.2)';
+      stockBadge.style.color = 'var(--warning-color)';
+    }
+    
+    stockCell.appendChild(stockBadge);
     
     // Threshold cell
     const thresholdCell = document.createElement('td');
@@ -65,20 +83,97 @@ function updateLowStockTable() {
 
 // Show restock dialog
 function showRestockDialog(item) {
-  const quantity = prompt(`${getText('restock_quantity_for')} ${item.type}:`, '5');
+  // Create a modal dialog for restock rather than using prompt
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.display = 'block';
   
-  if (quantity === null) return; // Cancelled
+  const modalContent = document.createElement('div');
+  modalContent.className = 'modal-content';
+  modalContent.style.maxWidth = '400px';
   
-  const quantityNum = parseInt(quantity);
+  const modalHeader = document.createElement('div');
+  modalHeader.className = 'modal-header';
   
-  if (isNaN(quantityNum) || quantityNum <= 0) {
-    alert(getText('enter_valid_quantity'));
-    return;
-  }
+  const title = document.createElement('h3');
+  title.textContent = `${getText('restock_item')} ${item.type}`;
   
-  addCableStock(item.id, quantityNum);
-  showMessage(
-    `${getText('added')} ${quantityNum} ${getText('items_to_stock_for')} ${item.type}`,
-    'success'
-  );
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'close-btn';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.addEventListener('click', () => {
+    document.body.removeChild(modal);
+  });
+  
+  modalHeader.appendChild(title);
+  modalHeader.appendChild(closeBtn);
+  
+  const modalBody = document.createElement('div');
+  
+  const formGroup = document.createElement('div');
+  formGroup.className = 'form-group';
+  
+  const label = document.createElement('label');
+  label.textContent = getText('quantity');
+  label.setAttribute('for', 'restock-quantity');
+  
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.id = 'restock-quantity';
+  input.className = 'number-input';
+  input.min = '1';
+  input.value = '5';
+  
+  formGroup.appendChild(label);
+  formGroup.appendChild(input);
+  
+  const modalFooter = document.createElement('div');
+  modalFooter.className = 'modal-footer';
+  
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn';
+  cancelBtn.style.marginRight = '0.5rem';
+  cancelBtn.textContent = getText('cancel');
+  cancelBtn.addEventListener('click', () => {
+    document.body.removeChild(modal);
+  });
+  
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'btn btn-primary';
+  confirmBtn.textContent = getText('confirm');
+  confirmBtn.addEventListener('click', () => {
+    const quantityNum = parseInt(input.value);
+    
+    if (isNaN(quantityNum) || quantityNum <= 0) {
+      alert(getText('enter_valid_quantity'));
+      return;
+    }
+    
+    addCableStock(item.id, quantityNum);
+    showMessage(
+      `${getText('added')} ${quantityNum} ${getText('items_to_stock_for')} ${item.type}`,
+      'success'
+    );
+    document.body.removeChild(modal);
+    updateLowStockTable();
+  });
+  
+  modalFooter.appendChild(cancelBtn);
+  modalFooter.appendChild(confirmBtn);
+  
+  modalBody.appendChild(formGroup);
+  
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modalContent.appendChild(modalFooter);
+  
+  modal.appendChild(modalContent);
+  
+  document.body.appendChild(modal);
+  
+  // Focus the input field
+  setTimeout(() => {
+    input.focus();
+    input.select();
+  }, 100);
 }
