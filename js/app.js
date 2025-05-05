@@ -1,4 +1,3 @@
-
 // Main App JavaScript
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize tab functionality
@@ -12,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Make the navigation menu fixed
   makeMenuFixed();
+  
+  // Initialize inner tabs (for dashboard)
+  initializeInnerTabs();
 });
 
 // Make the navigation menu fixed
@@ -45,36 +47,88 @@ function initializeTabs() {
       // Add active class to current tab and corresponding content
       this.classList.add('active');
       const tabId = this.getAttribute('data-tab');
-      document.getElementById(tabId).classList.add('active');
+      const contentElement = document.getElementById(tabId);
+      if (contentElement) {
+        contentElement.classList.add('active');
+      }
       
       // Scroll to top when changing tabs
       window.scrollTo(0, 0);
+      
+      // Redraw charts if dashboard tab is activated
+      if (tabId === 'dashboard' && typeof initCharts === 'function') {
+        setTimeout(initCharts, 100);
+      }
+    });
+  });
+}
+
+// Initialize inner tabs (for dashboard sections)
+function initializeInnerTabs() {
+  const innerTabButtons = document.querySelectorAll('.tab-btn');
+  
+  innerTabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      const parent = this.closest('.dashboard-card');
+      
+      if (parent) {
+        // Deactivate all sibling tabs
+        const siblingButtons = parent.querySelectorAll('.tab-btn');
+        siblingButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Activate current tab
+        this.classList.add('active');
+        
+        // Hide all sections
+        const sections = parent.querySelectorAll('.activity-section');
+        sections.forEach(section => section.classList.remove('active'));
+        
+        // Show current section
+        const currentSection = document.getElementById(targetId);
+        if (currentSection) {
+          currentSection.classList.add('active');
+        }
+      }
     });
   });
 }
 
 // Load all data from localStorage
 function loadAllData() {
-  // Load cable types data
-  loadCableTypesData();
-  
-  // Load inventory data
-  loadInventoryData();
-  
-  // Update low stock table
-  updateLowStockTable();
-  
-  // Load checkout history
-  loadCheckoutHistory();
-  
-  // Initialize barcode system (removing)
-  // initBarcodeSystem(); - removed as requested
-  
-  // Load deliveries data
-  loadDeliveriesData();
-  
-  // Load dashboard data
-  loadDashboardData();
+  try {
+    // Load cable types data
+    if (typeof loadCableTypesData === 'function') {
+      loadCableTypesData();
+    }
+    
+    // Load inventory data
+    if (typeof loadInventoryData === 'function') {
+      loadInventoryData();
+    }
+    
+    // Update low stock table
+    if (typeof updateLowStockTable === 'function') {
+      updateLowStockTable();
+    }
+    
+    // Load checkout history
+    if (typeof loadCheckoutHistory === 'function') {
+      loadCheckoutHistory();
+    }
+    
+    // Load deliveries data
+    if (typeof loadDeliveriesData === 'function') {
+      loadDeliveriesData();
+    }
+    
+    // Load dashboard data
+    if (typeof loadDashboardData === 'function') {
+      loadDashboardData();
+    }
+  } catch (error) {
+    console.error('Error loading data:', error);
+  }
 }
 
 // Set up global event listeners

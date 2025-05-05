@@ -1,4 +1,3 @@
-
 // Deliveries Management
 
 // Format date in German format (DD.MM.YYYY)
@@ -349,37 +348,52 @@ function viewDeliveryDetails(deliveryId) {
 
 // Open modal for adding a new delivery
 function openAddDeliveryModal() {
-  document.getElementById('delivery-modal-title').textContent = getText('add_new_delivery');
-  document.getElementById('save-delivery-text').textContent = getText('save');
+  const titleElement = document.getElementById('delivery-modal-title');
+  if (titleElement) {
+    titleElement.textContent = getText('add_new_delivery');
+  }
+  
+  const saveTextElement = document.getElementById('save-delivery-text');
+  if (saveTextElement) {
+    saveTextElement.textContent = getText('save');
+  }
   
   // Reset form fields
-  document.getElementById('delivery-form').reset();
+  const form = document.getElementById('delivery-form');
+  if (form) {
+    form.reset();
+  }
   
   // Set default date to today
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('delivery-date').value = today;
+  const dateElement = document.getElementById('delivery-date');
+  if (dateElement) {
+    dateElement.value = today;
+  }
   
   // Generate a unique ID
-  document.getElementById('delivery-id').value = 'DEL-' + Date.now().toString().slice(-6);
-  
-  // Make supplier field optional (not required)
-  const supplierField = document.getElementById('delivery-supplier');
-  if (supplierField) {
-    supplierField.removeAttribute('required');
+  const idElement = document.getElementById('delivery-id');
+  if (idElement) {
+    idElement.value = 'DEL-' + Date.now().toString().slice(-6);
   }
   
   // Clear items container
   const itemsContainer = document.getElementById('delivery-items-container');
-  itemsContainer.innerHTML = '';
-  
-  // Add one initial item
-  addDeliveryItem();
-  
-  // Update type selects in the form
-  updateDeliveryTypeSelects();
+  if (itemsContainer) {
+    itemsContainer.innerHTML = '';
+    
+    // Add one initial item
+    addDeliveryItem();
+    
+    // Update type selects in the form
+    updateDeliveryTypeSelects();
+  }
   
   // Show modal
-  document.getElementById('delivery-modal').style.display = 'block';
+  const modal = document.getElementById('delivery-modal');
+  if (modal) {
+    modal.style.display = 'block';
+  }
 }
 
 // Add an item to the delivery form with detailed cable information
@@ -537,6 +551,7 @@ function updateDeliveryTypeSelects() {
 // Update item properties based on selected cable type with detailed inputs
 function updateItemProperties(typeSelect, propertiesContainer) {
   const typeId = typeSelect.value;
+  if (!propertiesContainer) return;
   propertiesContainer.innerHTML = '';
   
   if (!typeId) return;
@@ -579,8 +594,15 @@ function updateItemProperties(typeSelect, propertiesContainer) {
         
       case 'color':
         propInput = document.createElement('input');
-        propInput.type = 'color';
-        propInput.className = 'color-input';
+        propInput.type = 'hidden'; // Changed from color to hidden as per requirement
+        propInput.className = 'hidden-input';
+        propInput.value = "#000000"; // Default color
+        
+        // Add text display instead
+        const colorText = document.createElement('span');
+        colorText.textContent = "Color information (hidden)";
+        colorText.className = 'color-info-text';
+        propContainer.appendChild(colorText);
         break;
         
       case 'number':
@@ -609,7 +631,9 @@ function updateItemProperties(typeSelect, propertiesContainer) {
     });
     
     propContainer.appendChild(propLabel);
-    if (prop.type !== 'boolean') {
+    if (prop.type !== 'boolean' && prop.type !== 'color') {
+      propContainer.appendChild(propInput);
+    } else if (prop.type === 'boolean') {
       propContainer.appendChild(propInput);
     }
     
@@ -622,8 +646,8 @@ function updateItemProperties(typeSelect, propertiesContainer) {
 // Update item preview based on selected type and properties
 function updateItemPreview(typeSelect, propertiesContainer, previewContent) {
   const typeId = typeSelect.value;
-  if (!typeId) {
-    previewContent.innerHTML = '';
+  if (!typeId || !previewContent) {
+    if (previewContent) previewContent.innerHTML = '';
     return;
   }
   
@@ -675,8 +699,9 @@ function updateItemPreview(typeSelect, propertiesContainer, previewContent) {
           propItem.textContent = key;
           propsList.appendChild(propItem);
         }
-      } else if (key.toLowerCase().includes('color') && typeof value === 'string' && value.startsWith('#')) {
-        propItem.innerHTML = `${key}: <span style="display:inline-block; width:12px; height:12px; background:${value}; border:1px solid #ccc; margin-right:5px;"></span>${value}`;
+      } else if (key.toLowerCase().includes('color')) {
+        // Skip color display in preview as per requirement
+        propItem.textContent = `${key}: [Color information hidden]`;
         propsList.appendChild(propItem);
       } else {
         propItem.textContent = `${key}: ${value}`;

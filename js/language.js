@@ -246,60 +246,84 @@ function switchLanguage() {
 
 // Update language UI
 function updateLanguageUI() {
-  const languageText = document.getElementById('language-text');
-  languageText.textContent = currentLanguage === 'en' ? 'DE' : 'EN';
+  const languageToggle = document.getElementById('language-toggle');
+  if (languageToggle) {
+    languageToggle.innerHTML = `<span class="lang-icon">${currentLanguage === 'en' ? '🇩🇪' : '🇬🇧'}</span>`;
+    languageToggle.title = currentLanguage === 'en' ? 'Switch to German' : 'Switch to English';
+  }
 }
 
 // Update all text based on current language
 function updateAllText() {
-  // Update all text elements with data-text attribute
-  const elements = document.querySelectorAll('[data-text]');
-  elements.forEach(element => {
-    const textKey = element.getAttribute('data-text');
-    element.textContent = getText(textKey);
-  });
-  
-  // Manually update specific elements
-  document.getElementById('main-title').textContent = currentLanguage === 'en' ? 'Cable Inventory System' : 'Kabel-Inventarsystem';
-  document.getElementById('dashboard-title').textContent = currentLanguage === 'en' ? 'Dashboard' : 'Dashboard';
-  document.getElementById('inventory-title').textContent = currentLanguage === 'en' ? 'Cable Inventory' : 'Kabelinventar';
-  document.getElementById('cable-types-title').textContent = currentLanguage === 'en' ? 'Cable Types' : 'Kabeltypen';
-  document.getElementById('deliveries-title').textContent = currentLanguage === 'en' ? 'Cable Deliveries' : 'Kabellieferungen';
-  document.getElementById('low-stock-title').textContent = currentLanguage === 'en' ? 'Low Stock Items' : 'Niedrigbestandsartikel';
-  document.getElementById('checkout-title').textContent = currentLanguage === 'en' ? 'Cable Checkout' : 'Kabelentnahme';
-  document.getElementById('scan-title').textContent = currentLanguage === 'en' ? '	Barcode Scanner' : 'Barcode-Scanner';
-  document.getElementById('import-export-title').textContent = currentLanguage === 'en' ? 'Import/Export Data' : 'Daten Importieren/Exportieren';
-  
-  // Update placeholders
-  document.getElementById('inventory-search').placeholder = currentLanguage === 'en' ? 'Search cables...' : 'Kabel suchen...';
-  document.getElementById('barcode-input').placeholder = currentLanguage === 'en' ? 'Scan or type barcode...' : 'Barcode scannen oder eingeben...';
-  
-  // Update buttons
-  document.getElementById('add-btn-text').textContent = currentLanguage === 'en' ? 'Add Cable' : 'Kabel hinzufügen';
-  document.getElementById('add-type-btn-text').textContent = currentLanguage === 'en' ? 'Add Cable Type' : 'Kabeltyp hinzufügen';
-  document.getElementById('add-delivery-btn-text').textContent = currentLanguage === 'en' ? 'New Delivery' : 'Neue Lieferung';
-  document.getElementById('checkout-btn-text').textContent = currentLanguage === 'en' ? 'Checkout' : 'Entnehmen';
-  document.getElementById('scan-button-text').textContent = currentLanguage === 'en' ? 'Scan' : 'Scannen';
-  document.getElementById('register-barcode-btn-text').textContent = currentLanguage === 'en' ? 'Register Barcode' : 'Barcode registrieren';
-  document.getElementById('import-btn-text').textContent = currentLanguage === 'en' ? 'Import Data' : 'Daten importieren';
-  document.getElementById('export-btn-text').textContent = currentLanguage === 'en' ? 'Export Data' : 'Daten exportieren';
-  
-  // Update table headers
-  // ... more elements as needed ...
-  
-  // Force redraw of tables
-  loadInventoryData();
-  loadCableTypesData();
-  updateLowStockTable();
-  loadDeliveriesData();
-  loadCheckoutHistory();
-  loadDashboardData();
+  try {
+    // Update all text elements with data-text attribute
+    const elements = document.querySelectorAll('[data-text]');
+    elements.forEach(element => {
+      const textKey = element.getAttribute('data-text');
+      element.textContent = getText(textKey);
+    });
+    
+    // Manually update specific elements - check if they exist first
+    updateElementText('main-title', currentLanguage === 'en' ? 'Cable Inventory System' : 'Kabel-Inventarsystem');
+    updateElementText('dashboard-title', currentLanguage === 'en' ? 'Dashboard' : 'Dashboard');
+    updateElementText('inventory-title', currentLanguage === 'en' ? 'Cable Inventory' : 'Kabelinventar');
+    updateElementText('cable-types-title', currentLanguage === 'en' ? 'Cable Types' : 'Kabeltypen');
+    updateElementText('deliveries-title', currentLanguage === 'en' ? 'Cable Deliveries' : 'Kabellieferungen');
+    updateElementText('low-stock-title', currentLanguage === 'en' ? 'Low Stock Items' : 'Niedrigbestandsartikel');
+    updateElementText('checkout-title', currentLanguage === 'en' ? 'Cable Checkout' : 'Kabelentnahme');
+    updateElementText('import-export-title', currentLanguage === 'en' ? 'Import/Export Data' : 'Daten Importieren/Exportieren');
+    
+    // Update placeholders - check if they exist first
+    updateElementPlaceholder('inventory-search', currentLanguage === 'en' ? 'Search cables...' : 'Kabel suchen...');
+    
+    // Update buttons - check if they exist first
+    updateElementText('add-btn-text', currentLanguage === 'en' ? 'Add Cable' : 'Kabel hinzufügen');
+    updateElementText('add-type-btn-text', currentLanguage === 'en' ? 'Add Cable Type' : 'Kabeltyp hinzufügen');
+    updateElementText('add-delivery-btn-text', currentLanguage === 'en' ? 'New Delivery' : 'Neue Lieferung');
+    updateElementText('checkout-btn-text', currentLanguage === 'en' ? 'Checkout' : 'Entnehmen');
+    updateElementText('import-btn-text', currentLanguage === 'en' ? 'Import Data' : 'Daten importieren');
+    updateElementText('export-btn-text', currentLanguage === 'en' ? 'Export Data' : 'Daten exportieren');
+    
+    // Force redraw of tables if they're initialized
+    if (typeof loadInventoryData === 'function') loadInventoryData();
+    if (typeof loadCableTypesData === 'function') loadCableTypesData();
+    if (typeof updateLowStockTable === 'function') updateLowStockTable();
+    if (typeof loadDeliveriesData === 'function') loadDeliveriesData();
+    if (typeof loadCheckoutHistory === 'function') loadCheckoutHistory();
+    if (typeof loadDashboardData === 'function') loadDashboardData();
+  } catch (error) {
+    console.error('Error updating text:', error);
+  }
+}
+
+// Helper function to update element text safely
+function updateElementText(id, text) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = text;
+  }
+}
+
+// Helper function to update element placeholder safely
+function updateElementPlaceholder(id, text) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.placeholder = text;
+  }
+}
+
+// Helper function to access text based on current language
+function getText(key) {
+  const lang = getCurrentLanguage();
+  return langData[lang] && langData[lang][key] ? langData[lang][key] : key;
 }
 
 // Setup language switcher
 document.addEventListener('DOMContentLoaded', function() {
   const languageToggle = document.getElementById('language-toggle');
-  languageToggle.addEventListener('click', switchLanguage);
+  if (languageToggle) {
+    languageToggle.addEventListener('click', switchLanguage);
+  }
   
   // Initialize UI with current language
   updateLanguageUI();

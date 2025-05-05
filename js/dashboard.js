@@ -1,13 +1,16 @@
-
 // Dashboard for Cable Inventory System
 
 // Load dashboard data
 function loadDashboardData() {
-  updateStockSummary();
-  updateRecentDeliveries();
-  updateRecentCheckouts();
-  updateLowStockSummary();
-  initCharts();
+  try {
+    updateStockSummary();
+    updateRecentDeliveries();
+    updateRecentCheckouts();
+    updateLowStockSummary();
+    initCharts();
+  } catch (error) {
+    console.error('Error loading dashboard data:', error);
+  }
 }
 
 // Update stock summary stats
@@ -17,14 +20,14 @@ function updateStockSummary() {
   
   // Calculate total stock
   const totalStock = inventory.reduce((sum, cable) => sum + cable.stock, 0);
-  document.getElementById('total-stock-value').textContent = totalStock;
+  updateElementText('total-stock-value', totalStock);
   
   // Calculate unique cable types
   const uniqueTypeIds = [...new Set(inventory.map(cable => cable.typeId))];
-  document.getElementById('unique-types-value').textContent = uniqueTypeIds.length;
+  updateElementText('unique-types-value', uniqueTypeIds.length);
   
   // Calculate total value (if we had price data, for now use count)
-  document.getElementById('total-value-value').textContent = totalStock;
+  updateElementText('total-value-value', totalStock);
   
   // Calculate stock distribution by category
   const categoryData = {};
@@ -42,6 +45,8 @@ function updateStockSummary() {
   
   // Update category distribution list
   const categoryList = document.getElementById('category-distribution');
+  if (!categoryList) return;
+  
   categoryList.innerHTML = '';
   
   Object.entries(categoryData)
@@ -63,10 +68,20 @@ function updateStockSummary() {
     });
 }
 
+// Helper function to safely update text content
+function updateElementText(id, text) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = text;
+  }
+}
+
 // Update recent deliveries
 function updateRecentDeliveries() {
   const deliveries = getDeliveries();
   const recentList = document.getElementById('recent-deliveries');
+  if (!recentList) return;
+  
   recentList.innerHTML = '';
   
   if (deliveries.length === 0) {
@@ -86,10 +101,10 @@ function updateRecentDeliveries() {
                         delivery.status === 'cancelled' ? 'status-danger' : 'status-pending';
       
       item.innerHTML = `
-        <div class="activity-date">${new Date(delivery.date).toLocaleDateString()}</div>
+        <div class="activity-date">${formatDateGerman(delivery.date)}</div>
         <div class="activity-content">
           <div>
-            <strong>${delivery.id}</strong> - ${delivery.supplier}
+            <strong>${delivery.id}</strong> - ${delivery.supplier || '-'}
           </div>
           <div>
             ${delivery.items.reduce((sum, item) => sum + item.quantity, 0)} items 
@@ -111,6 +126,8 @@ function updateRecentDeliveries() {
 function updateRecentCheckouts() {
   const checkoutHistory = getCheckoutHistory();
   const recentList = document.getElementById('recent-checkouts');
+  if (!recentList) return;
+  
   recentList.innerHTML = '';
   
   if (checkoutHistory.length === 0) {
@@ -132,7 +149,7 @@ function updateRecentCheckouts() {
       const cableName = cable ? cable.type : checkout.cableId;
       
       item.innerHTML = `
-        <div class="activity-date">${new Date(checkout.date).toLocaleDateString()}</div>
+        <div class="activity-date">${formatDateGerman(checkout.date)}</div>
         <div class="activity-content">
           <div><strong>${cableName}</strong> - ${checkout.quantity} units</div>
           <div>${getText('to')}: ${checkout.recipient}</div>
@@ -148,11 +165,15 @@ function updateRecentCheckouts() {
 
 // Update low stock summary
 function updateLowStockSummary() {
-  const threshold = parseInt(document.getElementById('low-stock-threshold').value || 5);
+  const thresholdElement = document.getElementById('low-stock-threshold');
+  const threshold = thresholdElement ? parseInt(thresholdElement.value || 5) : 5;
+  
   const inventory = getInventory();
   const lowStockItems = inventory.filter(item => item.stock <= threshold);
   
   const lowStockList = document.getElementById('low-stock-summary');
+  if (!lowStockList) return;
+  
   lowStockList.innerHTML = '';
   
   if (lowStockItems.length === 0) {
@@ -203,8 +224,16 @@ function updateLowStockSummary() {
 
 // Initialize charts
 function initCharts() {
-  drawStockTrendChart();
-  drawTypeDistributionChart();
+  const stockTrendCanvas = document.getElementById('stock-trend-chart');
+  const typeDistributionCanvas = document.getElementById('type-distribution-chart');
+  
+  if (stockTrendCanvas) {
+    drawStockTrendChart();
+  }
+  
+  if (typeDistributionCanvas) {
+    drawTypeDistributionChart();
+  }
 }
 
 // Draw stock trend chart
