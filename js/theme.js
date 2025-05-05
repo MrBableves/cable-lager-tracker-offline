@@ -15,7 +15,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Add event listener for theme toggle
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+  }
 });
 
 // Toggle between light and dark mode

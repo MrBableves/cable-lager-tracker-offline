@@ -1,3 +1,4 @@
+
 // Inventory Management Functions
 
 // Format date in German format (DD.MM.YYYY)
@@ -43,6 +44,8 @@ function saveInventory(inventory) {
 function loadInventoryData() {
   const inventory = getInventory();
   const tableBody = document.getElementById('inventory-body');
+  if (!tableBody) return;
+  
   tableBody.innerHTML = '';
   
   inventory.forEach(cable => {
@@ -75,10 +78,8 @@ function createInventoryRow(cable) {
     Object.entries(cable.properties).forEach(([key, value]) => {
       const propItem = document.createElement('li');
       
-      // Special handling for color properties
-      if (key.toLowerCase().includes('color') && typeof value === 'string' && value.startsWith('#')) {
-        propItem.innerHTML = `<strong>${key}:</strong> <span style="display:inline-block; width:12px; height:12px; background:${value}; border:1px solid #ccc; margin-right:5px;"></span>${value}`;
-      } else if (typeof value === 'boolean') {
+      // Special handling for boolean properties
+      if (typeof value === 'boolean') {
         propItem.innerHTML = `<strong>${key}:</strong> ${value ? '✓' : '✗'}`;
       } else {
         propItem.innerHTML = `<strong>${key}:</strong> ${value}`;
@@ -96,7 +97,10 @@ function createInventoryRow(cable) {
   stockCell.textContent = cable.stock;
   
   // Add class for low stock warning
-  if (cable.stock <= parseInt(document.getElementById('low-stock-threshold').value)) {
+  const lowStockThreshold = document.getElementById('low-stock-threshold');
+  const threshold = lowStockThreshold ? parseInt(lowStockThreshold.value) : 10;
+  
+  if (cable.stock <= threshold) {
     stockCell.classList.add(cable.stock === 0 ? 'stock-danger' : 'stock-warning');
   }
   
@@ -238,24 +242,47 @@ function getCableById(cableId) {
 
 // Open modal for adding a new cable
 function openAddCableModal() {
-  document.getElementById('modal-title').textContent = getText('add_new_cable');
-  document.getElementById('save-cable-text').textContent = getText('save');
-  document.getElementById('edit-mode').value = 'add';
+  const modalTitle = document.getElementById('cable-modal-title');
+  if (modalTitle) {
+    modalTitle.textContent = getText('add_new_cable');
+  }
+  
+  const saveText = document.getElementById('save-cable-text');
+  if (saveText) {
+    saveText.textContent = getText('save');
+  }
+  
+  const editMode = document.getElementById('cable-edit-mode');
+  if (editMode) {
+    editMode.value = 'add';
+  }
   
   // Reset form fields
-  document.getElementById('cable-form').reset();
+  const cableForm = document.getElementById('cable-form');
+  if (cableForm) {
+    cableForm.reset();
+  }
   
   // Clear properties container
-  document.getElementById('cable-properties-container').innerHTML = '';
+  const propertiesContainer = document.getElementById('cable-properties-container');
+  if (propertiesContainer) {
+    propertiesContainer.innerHTML = '';
+  }
   
   // Generate a unique ID
-  document.getElementById('cable-id').value = generateUniqueId();
+  const cableIdInput = document.getElementById('cable-id');
+  if (cableIdInput) {
+    cableIdInput.value = generateUniqueId();
+  }
   
   // Update type select and associated properties
   updateCableTypeSelects();
   
   // Show modal
-  document.getElementById('cable-modal').style.display = 'block';
+  const cableModal = document.getElementById('cable-modal');
+  if (cableModal) {
+    cableModal.style.display = 'block';
+  }
 }
 
 // Open modal for editing a cable
@@ -265,12 +292,26 @@ function openEditCableModal(cableId) {
   
   if (!cable) return;
   
-  document.getElementById('modal-title').textContent = getText('edit_cable');
-  document.getElementById('save-cable-text').textContent = getText('update');
-  document.getElementById('edit-mode').value = 'edit';
+  const modalTitle = document.getElementById('cable-modal-title');
+  if (modalTitle) {
+    modalTitle.textContent = getText('edit_cable');
+  }
+  
+  const saveText = document.getElementById('save-cable-text');
+  if (saveText) {
+    saveText.textContent = getText('update');
+  }
+  
+  const editMode = document.getElementById('cable-edit-mode');
+  if (editMode) {
+    editMode.value = 'edit';
+  }
   
   // Fill form fields with cable data
-  document.getElementById('cable-id').value = cable.id;
+  const cableIdInput = document.getElementById('cable-id');
+  if (cableIdInput) {
+    cableIdInput.value = cable.id;
+  }
   
   // Update type selects
   updateCableTypeSelects();
@@ -302,11 +343,21 @@ function openEditCableModal(cableId) {
     }
   }
   
-  document.getElementById('cable-stock').value = cable.stock;
-  document.getElementById('cable-location').value = cable.location || '';
+  const stockInput = document.getElementById('cable-stock');
+  if (stockInput) {
+    stockInput.value = cable.stock;
+  }
+  
+  const locationInput = document.getElementById('cable-location');
+  if (locationInput) {
+    locationInput.value = cable.location || '';
+  }
   
   // Show modal
-  document.getElementById('cable-modal').style.display = 'block';
+  const cableModal = document.getElementById('cable-modal');
+  if (cableModal) {
+    cableModal.style.display = 'block';
+  }
 }
 
 // Update cable type selects
@@ -354,6 +405,8 @@ function updateCableTypeSelects() {
 
 // Update cable properties based on selected cable type
 function updateCableProperties(typeSelect, propertiesContainer) {
+  if (!propertiesContainer) return;
+  
   const typeId = typeSelect.value;
   propertiesContainer.innerHTML = '';
   
@@ -378,6 +431,11 @@ function updateCableProperties(typeSelect, propertiesContainer) {
   propertiesGrid.style.gap = '1rem';
   
   selectedType.properties.forEach(prop => {
+    // Skip color properties
+    if (prop.type === 'color' || prop.name.toLowerCase().includes('color')) {
+      return;
+    }
+    
     const propContainer = document.createElement('div');
     propContainer.className = 'form-group';
     
@@ -394,13 +452,6 @@ function updateCableProperties(typeSelect, propertiesContainer) {
         propInput.style.marginLeft = '0.5rem';
         propContainer.style.display = 'flex';
         propContainer.style.alignItems = 'center';
-        break;
-        
-      case 'color':
-        propInput = document.createElement('input');
-        propInput.type = 'color';
-        propInput.className = 'color-input';
-        propInput.value = '#000000';
         break;
         
       case 'number':
@@ -433,13 +484,23 @@ function updateCableProperties(typeSelect, propertiesContainer) {
 function saveCable(e) {
   e.preventDefault();
   
-  const mode = document.getElementById('edit-mode').value;
-  const cableId = document.getElementById('cable-id').value;
+  const editModeInput = document.getElementById('cable-edit-mode');
+  const mode = editModeInput ? editModeInput.value : 'add';
+  
+  const cableIdInput = document.getElementById('cable-id');
+  const cableId = cableIdInput ? cableIdInput.value : '';
+  
   const cableTypeSelect = document.getElementById('cable-type');
+  if (!cableTypeSelect) return;
+  
   const cableTypeId = cableTypeSelect.value;
   const cableType = cableTypeSelect.options[cableTypeSelect.selectedIndex].text;
-  const cableStock = parseInt(document.getElementById('cable-stock').value);
-  const cableLocation = document.getElementById('cable-location').value;
+  
+  const cableStockInput = document.getElementById('cable-stock');
+  const cableStock = cableStockInput ? parseInt(cableStockInput.value) : 0;
+  
+  const cableLocationInput = document.getElementById('cable-location');
+  const cableLocation = cableLocationInput ? cableLocationInput.value : '';
   
   // Validate type selection
   if (!cableTypeId) {
@@ -479,7 +540,10 @@ function saveCable(e) {
     updateCable(cableData);
   }
   
-  closeModal();
+  const cableModal = document.getElementById('cable-modal');
+  if (cableModal) {
+    cableModal.style.display = 'none';
+  }
 }
 
 // Generate a unique ID for new cables
@@ -513,8 +577,7 @@ function initializeSampleData() {
         type: 'HDMI',
         properties: {
           'Version': '2.1',
-          'Length': 2,
-          'Color': '#000000'
+          'Length': 2
         },
         stock: 15,
         location: 'Shelf A1'
@@ -525,8 +588,7 @@ function initializeSampleData() {
         type: 'Copper Cable',
         properties: {
           'AWG': 24,
-          'Shielded': true,
-          'Color': '#808080'
+          'Shielded': true
         },
         stock: 8,
         location: 'Shelf B2'
@@ -537,8 +599,7 @@ function initializeSampleData() {
         type: 'Copper Cable',
         properties: {
           'AWG': 22,
-          'Shielded': false,
-          'Color': '#00ff00'
+          'Shielded': false
         },
         stock: 5,
         location: 'Shelf A2'
@@ -549,8 +610,7 @@ function initializeSampleData() {
         type: 'Fiber Optic',
         properties: {
           'OM Standard': 'OM3',
-          'Connector Type': 'LC',
-          'Color': '#0000ff'
+          'Connector Type': 'LC'
         },
         stock: 3,
         location: 'Shelf C1'
@@ -561,8 +621,7 @@ function initializeSampleData() {
         type: 'Fiber Optic',
         properties: {
           'OM Standard': 'OM4',
-          'Connector Type': 'SC',
-          'Color': '#ff00ff'
+          'Connector Type': 'SC'
         },
         stock: 2,
         location: 'Shelf D3'
@@ -577,3 +636,13 @@ function initializeSampleData() {
 
 // Call this once when the application first loads
 document.addEventListener('DOMContentLoaded', initializeSampleData);
+
+// Helper function we might need
+function getBarcodes() {
+  const barcodeData = localStorage.getItem('cableBarcodes');
+  return barcodeData ? JSON.parse(barcodeData) : [];
+}
+
+function saveBarcodes(barcodes) {
+  localStorage.setItem('cableBarcodes', JSON.stringify(barcodes));
+}

@@ -1,3 +1,4 @@
+
 // Main App JavaScript
 document.addEventListener('DOMContentLoaded', function() {
   // Initialize tab functionality
@@ -11,9 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Make the navigation menu fixed
   makeMenuFixed();
-  
-  // Initialize inner tabs (for dashboard)
-  initializeInnerTabs();
 });
 
 // Make the navigation menu fixed
@@ -54,42 +52,6 @@ function initializeTabs() {
       
       // Scroll to top when changing tabs
       window.scrollTo(0, 0);
-      
-      // Redraw charts if dashboard tab is activated
-      if (tabId === 'dashboard' && typeof initCharts === 'function') {
-        setTimeout(initCharts, 100);
-      }
-    });
-  });
-}
-
-// Initialize inner tabs (for dashboard sections)
-function initializeInnerTabs() {
-  const innerTabButtons = document.querySelectorAll('.tab-btn');
-  
-  innerTabButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      const targetId = this.getAttribute('data-target');
-      const parent = this.closest('.dashboard-card');
-      
-      if (parent) {
-        // Deactivate all sibling tabs
-        const siblingButtons = parent.querySelectorAll('.tab-btn');
-        siblingButtons.forEach(btn => btn.classList.remove('active'));
-        
-        // Activate current tab
-        this.classList.add('active');
-        
-        // Hide all sections
-        const sections = parent.querySelectorAll('.activity-section');
-        sections.forEach(section => section.classList.remove('active'));
-        
-        // Show current section
-        const currentSection = document.getElementById(targetId);
-        if (currentSection) {
-          currentSection.classList.add('active');
-        }
-      }
     });
   });
 }
@@ -121,11 +83,6 @@ function loadAllData() {
     if (typeof loadDeliveriesData === 'function') {
       loadDeliveriesData();
     }
-    
-    // Load dashboard data
-    if (typeof loadDashboardData === 'function') {
-      loadDashboardData();
-    }
   } catch (error) {
     console.error('Error loading data:', error);
   }
@@ -134,7 +91,10 @@ function loadAllData() {
 // Set up global event listeners
 function setupEventListeners() {
   // Add Cable button click
-  document.getElementById('add-cable-btn').addEventListener('click', openAddCableModal);
+  const addCableBtn = document.getElementById('add-cable-btn');
+  if (addCableBtn) {
+    addCableBtn.addEventListener('click', openAddCableModal);
+  }
   
   // Close modal buttons click
   document.querySelectorAll('.close-modal').forEach(button => {
@@ -145,28 +105,45 @@ function setupEventListeners() {
   });
   
   // Save cable form submit
-  document.getElementById('cable-form').addEventListener('submit', saveCable);
+  const cableForm = document.getElementById('cable-form');
+  if (cableForm) {
+    cableForm.addEventListener('submit', saveCable);
+  }
   
   // Checkout button click
-  document.getElementById('checkout-btn').addEventListener('click', checkoutCable);
+  const checkoutBtn = document.getElementById('checkout-btn');
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', checkoutCable);
+  }
   
   // Low stock threshold change
-  document.getElementById('low-stock-threshold').addEventListener('change', function() {
-    updateLowStockTable();
-    updateLowStockSummary(); // Update dashboard low stock summary
-  });
+  const lowStockThreshold = document.getElementById('low-stock-threshold');
+  if (lowStockThreshold) {
+    lowStockThreshold.addEventListener('change', function() {
+      updateLowStockTable();
+    });
+  }
   
   // Import button click
-  document.getElementById('import-btn').addEventListener('click', importData);
+  const importBtn = document.getElementById('import-btn');
+  if (importBtn) {
+    importBtn.addEventListener('click', importData);
+  }
   
   // Export button click
-  document.getElementById('export-btn').addEventListener('click', exportData);
+  const exportBtn = document.getElementById('export-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportData);
+  }
   
   // Search functionality
-  document.getElementById('inventory-search').addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase();
-    filterInventoryTable(searchTerm);
-  });
+  const inventorySearch = document.getElementById('inventory-search');
+  if (inventorySearch) {
+    inventorySearch.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      filterInventoryTable(searchTerm);
+    });
+  }
   
   // Close modal when clicking outside
   window.addEventListener('click', function(e) {
@@ -178,19 +155,11 @@ function setupEventListeners() {
     });
   });
   
-  // Window resize event for charts
-  window.addEventListener('resize', function() {
-    // Redraw charts when window is resized
-    if (document.getElementById('dashboard').classList.contains('active')) {
-      initCharts();
-    }
-  });
-  
-  // Tab change events for chart rendering
-  document.getElementById('tab-dashboard').addEventListener('click', function() {
-    // Delay to ensure DOM is ready
-    setTimeout(initCharts, 100);
-  });
+  // Set up language toggle
+  const languageToggle = document.getElementById('language-toggle');
+  if (languageToggle) {
+    languageToggle.addEventListener('click', toggleLanguage);
+  }
 }
 
 // Show alert message using tooltip or simple alert for now
