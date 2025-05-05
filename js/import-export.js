@@ -23,10 +23,6 @@ function exportData() {
       data = getCheckoutHistory();
       filename = 'checkout_history';
       break;
-    case 'barcodes':
-      data = getBarcodes();
-      filename = 'cable_barcodes';
-      break;
     case 'all':
       exportAllData();
       return;
@@ -74,13 +70,23 @@ function downloadCSV(csv, filename) {
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   
+  // Format date in German format DD.MM.YYYY
+  const today = new Date();
+  const day = today.getDate().toString().padStart(2, '0');
+  const month = (today.getMonth() + 1).toString().padStart(2, '0');
+  const year = today.getFullYear();
+  const dateStr = `${day}.${month}.${year}`;
+  
   link.setAttribute('href', url);
-  link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `${filename}_${dateStr}.csv`);
   link.style.visibility = 'hidden';
   
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  
+  // Also save CSV to localStorage for backup
+  localStorage.setItem(`${filename}_csv`, csv);
 }
 
 // Import data from CSV file
@@ -121,9 +127,6 @@ function importData() {
       case 'checkout':
         saveCheckoutHistory(data);
         loadCheckoutHistory();
-        break;
-      case 'barcodes':
-        saveBarcodes(data);
         break;
       default:
         showMessage(getText('import_failed'), 'error');

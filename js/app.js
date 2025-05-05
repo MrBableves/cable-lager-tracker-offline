@@ -9,7 +9,25 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Set up event listeners
   setupEventListeners();
+  
+  // Make the navigation menu fixed
+  makeMenuFixed();
 });
+
+// Make the navigation menu fixed
+function makeMenuFixed() {
+  const navMenu = document.querySelector('.tab-navigation');
+  if (navMenu) {
+    navMenu.classList.add('fixed-nav');
+    
+    // Add padding to the content to prevent it from jumping when the menu becomes fixed
+    const mainContent = document.querySelector('.tab-contents');
+    if (mainContent) {
+      const navHeight = navMenu.offsetHeight;
+      mainContent.style.paddingTop = navHeight + 'px';
+    }
+  }
+}
 
 // Initialize tab functionality
 function initializeTabs() {
@@ -49,8 +67,8 @@ function loadAllData() {
   // Load checkout history
   loadCheckoutHistory();
   
-  // Initialize barcode system
-  initBarcodeSystem();
+  // Initialize barcode system (removing)
+  // initBarcodeSystem(); - removed as requested
   
   // Load deliveries data
   loadDeliveriesData();
@@ -64,8 +82,13 @@ function setupEventListeners() {
   // Add Cable button click
   document.getElementById('add-cable-btn').addEventListener('click', openAddCableModal);
   
-  // Close modal button click
-  document.getElementById('close-modal').addEventListener('click', closeModal);
+  // Close modal buttons click
+  document.querySelectorAll('.close-modal').forEach(button => {
+    button.addEventListener('click', function() {
+      const modalId = this.closest('.modal').id;
+      document.getElementById(modalId).style.display = 'none';
+    });
+  });
   
   // Save cable form submit
   document.getElementById('cable-form').addEventListener('submit', saveCable);
@@ -84,19 +107,6 @@ function setupEventListeners() {
   
   // Export button click
   document.getElementById('export-btn').addEventListener('click', exportData);
-  
-  // Scan button click
-  document.getElementById('scan-button').addEventListener('click', handleBarcodeScan);
-  
-  // Register barcode button click
-  document.getElementById('register-barcode-btn').addEventListener('click', registerBarcode);
-  
-  // Handle barcode input key press for scanner simulation
-  document.getElementById('barcode-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      handleBarcodeScan();
-    }
-  });
   
   // Search functionality
   document.getElementById('inventory-search').addEventListener('input', function() {

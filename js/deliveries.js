@@ -1,15 +1,56 @@
 
 // Deliveries Management
 
+// Format date in German format (DD.MM.YYYY)
+function formatDateGerman(dateString) {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 // Get deliveries from localStorage
 function getDeliveries() {
   const deliveriesData = localStorage.getItem('cableDeliveries');
   return deliveriesData ? JSON.parse(deliveriesData) : [];
 }
 
-// Save deliveries to localStorage
+// Save deliveries to localStorage and CSV
 function saveDeliveries(deliveries) {
   localStorage.setItem('cableDeliveries', JSON.stringify(deliveries));
+  
+  // Save to CSV
+  const csv = convertToCSV(deliveries);
+  saveDataToCSV(csv, 'cable_deliveries.csv');
+}
+
+// Save data to CSV file (this function should also be defined in checkout.js)
+function saveDataToCSV(csvContent, filename) {
+  if (typeof csvContent !== 'string' || csvContent.length === 0) return;
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  
+  // Create a link to download the file
+  const link = document.createElement('a');
+  
+  if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+    // For IE
+    window.navigator.msSaveOrOpenBlob(blob, filename);
+  } else {
+    // For modern browsers
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+  }
 }
 
 // Load deliveries data and update the table
@@ -47,10 +88,7 @@ function createDeliveryRow(delivery) {
   idCell.textContent = delivery.id;
   
   const dateCell = document.createElement('td');
-  dateCell.textContent = new Date(delivery.date).toLocaleDateString();
-  
-  const supplierCell = document.createElement('td');
-  supplierCell.textContent = delivery.supplier;
+  dateCell.textContent = formatDateGerman(delivery.date);
   
   const statusCell = document.createElement('td');
   
@@ -126,7 +164,6 @@ function createDeliveryRow(delivery) {
   
   row.appendChild(idCell);
   row.appendChild(dateCell);
-  row.appendChild(supplierCell);
   row.appendChild(statusCell);
   row.appendChild(itemsCell);
   row.appendChild(actionsCell);
@@ -134,7 +171,7 @@ function createDeliveryRow(delivery) {
   return row;
 }
 
-// View delivery details
+// View delivery details with enhanced cable information display
 function viewDeliveryDetails(deliveryId) {
   const deliveries = getDeliveries();
   const delivery = deliveries.find(d => d.id === deliveryId);
@@ -148,8 +185,8 @@ function viewDeliveryDetails(deliveryId) {
   
   const modalContent = document.createElement('div');
   modalContent.className = 'modal-content';
-  modalContent.style.width = '80%';
-  modalContent.style.maxWidth = '800px';
+  modalContent.style.width = '90%'; // Wider to show more information
+  modalContent.style.maxWidth = '1200px';
   
   const modalHeader = document.createElement('div');
   modalHeader.className = 'modal-header';
@@ -158,7 +195,7 @@ function viewDeliveryDetails(deliveryId) {
   title.textContent = `${getText('delivery')} ${delivery.id}`;
   
   const closeBtn = document.createElement('button');
-  closeBtn.className = 'close-btn';
+  closeBtn.className = 'close-modal';
   closeBtn.innerHTML = '&times;';
   closeBtn.addEventListener('click', () => {
     document.body.removeChild(modal);
@@ -180,10 +217,7 @@ function viewDeliveryDetails(deliveryId) {
   infoSection.innerHTML = `
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
       <div>
-        <strong>${getText('date')}:</strong> ${new Date(delivery.date).toLocaleString()}
-      </div>
-      <div>
-        <strong>${getText('supplier')}:</strong> ${delivery.supplier}
+        <strong>${getText('date')}:</strong> ${formatDateGerman(delivery.date)}
       </div>
       <div>
         <strong>${getText('status')}:</strong> ${delivery.status}
@@ -198,7 +232,7 @@ function viewDeliveryDetails(deliveryId) {
     </div>
   `;
   
-  // Items table
+  // Items table with enhanced details
   const itemsSection = document.createElement('div');
   itemsSection.className = 'delivery-items';
   
@@ -207,6 +241,7 @@ function viewDeliveryDetails(deliveryId) {
   itemsTitle.style.marginBottom = '1rem';
   
   const itemsTable = document.createElement('table');
+  itemsTable.className = 'data-table';
   itemsTable.style.width = '100%';
   
   const thead = document.createElement('thead');
@@ -238,10 +273,19 @@ function viewDeliveryDetails(deliveryId) {
       const propsList = document.createElement('ul');
       propsList.style.listStyle = 'none';
       propsList.style.padding = '0';
+      propsList.style.margin = '0';
       
       Object.entries(item.properties).forEach(([key, value]) => {
         const propItem = document.createElement('li');
-        propItem.innerHTML = `<strong>${key}:</strong> ${value}`;
+        
+        if (typeof value === 'boolean') {
+          propItem.innerHTML = value ? `<strong>${key}</strong>` : `<strong>${key}:</strong> ${getText('no')}`;
+        } else if (key.toLowerCase().includes('color') && typeof value === 'string' && value.startsWith('#')) {
+          propItem.innerHTML = `<strong>${key}:</strong> <span style="display:inline-block; width:12px; height:12px; background:${value}; border:1px solid #ccc; margin-right:5px;"></span>${value}`;
+        } else {
+          propItem.innerHTML = `<strong>${key}:</strong> ${value}`;
+        }
+        
         propsList.appendChild(propItem);
       });
       
@@ -303,12 +347,6 @@ function viewDeliveryDetails(deliveryId) {
   document.body.appendChild(modal);
 }
 
-// Get cable type by ID
-function getCableTypeById(typeId) {
-  const types = getCableTypes();
-  return types.find(type => type.id === typeId);
-}
-
 // Open modal for adding a new delivery
 function openAddDeliveryModal() {
   document.getElementById('delivery-modal-title').textContent = getText('add_new_delivery');
@@ -324,6 +362,12 @@ function openAddDeliveryModal() {
   // Generate a unique ID
   document.getElementById('delivery-id').value = 'DEL-' + Date.now().toString().slice(-6);
   
+  // Make supplier field optional (not required)
+  const supplierField = document.getElementById('delivery-supplier');
+  if (supplierField) {
+    supplierField.removeAttribute('required');
+  }
+  
   // Clear items container
   const itemsContainer = document.getElementById('delivery-items-container');
   itemsContainer.innerHTML = '';
@@ -338,7 +382,7 @@ function openAddDeliveryModal() {
   document.getElementById('delivery-modal').style.display = 'block';
 }
 
-// Add an item to the delivery form
+// Add an item to the delivery form with detailed cable information
 function addDeliveryItem() {
   const container = document.getElementById('delivery-items-container');
   const itemId = Date.now();
@@ -419,14 +463,35 @@ function addDeliveryItem() {
   const propertiesContainer = document.createElement('div');
   propertiesContainer.className = 'item-properties';
   
+  // Preview container to show what the cable will look like in inventory
+  const previewContainer = document.createElement('div');
+  previewContainer.className = 'cable-preview';
+  previewContainer.style.marginTop = '1rem';
+  previewContainer.style.padding = '1rem';
+  previewContainer.style.backgroundColor = 'var(--bg-accent)';
+  previewContainer.style.borderRadius = 'var(--radius)';
+  previewContainer.style.display = 'none';
+  
+  const previewTitle = document.createElement('h6');
+  previewTitle.textContent = getText('preview');
+  previewTitle.style.marginBottom = '0.5rem';
+  previewContainer.appendChild(previewTitle);
+  
+  const previewContent = document.createElement('div');
+  previewContent.className = 'preview-content';
+  previewContainer.appendChild(previewContent);
+  
   itemContainer.appendChild(header);
   itemContainer.appendChild(propertiesContainer);
+  itemContainer.appendChild(previewContainer);
   
   container.appendChild(itemContainer);
   
   // Add change event to update properties when type changes
   typeSelect.addEventListener('change', function() {
     updateItemProperties(this, propertiesContainer);
+    updateItemPreview(typeSelect, propertiesContainer, previewContent);
+    previewContainer.style.display = 'block';
   });
   
   return itemContainer;
@@ -469,7 +534,7 @@ function updateDeliveryTypeSelects() {
   });
 }
 
-// Update item properties based on selected cable type
+// Update item properties based on selected cable type with detailed inputs
 function updateItemProperties(typeSelect, propertiesContainer) {
   const typeId = typeSelect.value;
   propertiesContainer.innerHTML = '';
@@ -533,6 +598,16 @@ function updateItemProperties(typeSelect, propertiesContainer) {
     propInput.dataset.name = prop.name;
     propInput.className += ' item-property';
     
+    // Add event listener to update preview in real-time
+    propInput.addEventListener('input', function() {
+      const previewContent = propContainer.closest('.delivery-item').querySelector('.preview-content');
+      if (previewContent) {
+        const typeSelect = propContainer.closest('.delivery-item').querySelector('.item-type');
+        const propsContainer = propContainer.closest('.item-properties');
+        updateItemPreview(typeSelect, propsContainer, previewContent);
+      }
+    });
+    
     propContainer.appendChild(propLabel);
     if (prop.type !== 'boolean') {
       propContainer.appendChild(propInput);
@@ -544,15 +619,86 @@ function updateItemProperties(typeSelect, propertiesContainer) {
   propertiesContainer.appendChild(propertiesGrid);
 }
 
-// Save delivery data from form
+// Update item preview based on selected type and properties
+function updateItemPreview(typeSelect, propertiesContainer, previewContent) {
+  const typeId = typeSelect.value;
+  if (!typeId) {
+    previewContent.innerHTML = '';
+    return;
+  }
+  
+  const types = getCableTypes();
+  const selectedType = types.find(type => type.id === typeId);
+  if (!selectedType) {
+    previewContent.innerHTML = '';
+    return;
+  }
+  
+  // Collect properties
+  const properties = {};
+  const propertyInputs = propertiesContainer.querySelectorAll('.item-property');
+  
+  propertyInputs.forEach(input => {
+    const propName = input.dataset.name;
+    let propValue;
+    
+    if (input.type === 'checkbox') {
+      propValue = input.checked;
+    } else {
+      propValue = input.value;
+    }
+    
+    properties[propName] = propValue;
+  });
+  
+  // Build preview
+  previewContent.innerHTML = '';
+  
+  const cableHeader = document.createElement('div');
+  cableHeader.className = 'cable-header';
+  cableHeader.style.fontWeight = 'bold';
+  cableHeader.textContent = selectedType.name;
+  previewContent.appendChild(cableHeader);
+  
+  const propsList = document.createElement('ul');
+  propsList.style.listStyle = 'none';
+  propsList.style.padding = '0';
+  propsList.style.margin = '0.5rem 0 0 0';
+  propsList.style.fontSize = '0.9em';
+  
+  Object.entries(properties).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      const propItem = document.createElement('li');
+      
+      if (typeof value === 'boolean') {
+        if (value) {
+          propItem.textContent = key;
+          propsList.appendChild(propItem);
+        }
+      } else if (key.toLowerCase().includes('color') && typeof value === 'string' && value.startsWith('#')) {
+        propItem.innerHTML = `${key}: <span style="display:inline-block; width:12px; height:12px; background:${value}; border:1px solid #ccc; margin-right:5px;"></span>${value}`;
+        propsList.appendChild(propItem);
+      } else {
+        propItem.textContent = `${key}: ${value}`;
+        propsList.appendChild(propItem);
+      }
+    }
+  });
+  
+  if (propsList.children.length > 0) {
+    previewContent.appendChild(propsList);
+  }
+}
+
+// Save delivery data from form and store in CSV
 function saveDelivery(e) {
   e.preventDefault();
   
   const deliveryId = document.getElementById('delivery-id').value;
   const deliveryDate = document.getElementById('delivery-date').value;
-  const deliverySupplier = document.getElementById('delivery-supplier').value;
-  const deliveryReference = document.getElementById('delivery-reference').value;
-  const deliveryNotes = document.getElementById('delivery-notes').value;
+  const deliverySupplier = document.getElementById('delivery-supplier')?.value || '';
+  const deliveryReference = document.getElementById('delivery-reference')?.value || '';
+  const deliveryNotes = document.getElementById('delivery-notes')?.value || '';
   
   // Collect items
   const items = [];
@@ -599,7 +745,7 @@ function saveDelivery(e) {
   
   const deliveryData = {
     id: deliveryId,
-    date: deliveryDate,
+    date: deliveryDate ? new Date(deliveryDate).toISOString() : new Date().toISOString(),
     supplier: deliverySupplier,
     reference: deliveryReference,
     notes: deliveryNotes,
@@ -709,4 +855,8 @@ function closeDeliveryModal() {
   document.getElementById('delivery-modal').style.display = 'none';
 }
 
-// Initialize function, no sample data for deliveries, they'll be created by users
+// Helper function to get cable type by ID
+function getCableTypeById(typeId) {
+  const types = getCableTypes();
+  return types.find(type => type.id === typeId);
+}

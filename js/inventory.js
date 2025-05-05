@@ -1,5 +1,13 @@
-
 // Inventory Management Functions
+
+// Format date in German format (DD.MM.YYYY)
+function formatDateGerman(dateString) {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
 
 // Get inventory data from localStorage
 function getInventory() {
@@ -7,9 +15,28 @@ function getInventory() {
   return inventoryData ? JSON.parse(inventoryData) : [];
 }
 
-// Save inventory data to localStorage
+// Save inventory data to localStorage and CSV
 function saveInventory(inventory) {
   localStorage.setItem('cableInventory', JSON.stringify(inventory));
+  
+  // Also save to CSV file
+  const csv = convertToCSV(inventory);
+  localStorage.setItem('inventoryCSV', csv); // Store in localStorage as backup
+  
+  // Try to save as a file (if in development environment)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = `inventory_${formatDateGerman(new Date().toISOString())}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+  }
 }
 
 // Load inventory data and update the table

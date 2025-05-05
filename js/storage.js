@@ -29,6 +29,15 @@ const storageAvailable = (type) => {
   }
 };
 
+// Format date in German format (DD.MM.YYYY)
+function formatDateGerman(dateString) {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 // Check localStorage availability and show warning if not available
 document.addEventListener('DOMContentLoaded', function() {
   if (!storageAvailable('localStorage')) {
@@ -36,43 +45,91 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Export all data to single CSV bundle file for full backup
-function exportAllData() {
-  // Create a ZIP file containing all CSV exports
-  // For simplicity, we'll just combine all data into one CSV file
-  // In a real implementation, this might use JSZip or similar
-  
+// Get file system handle for CSV file storage
+async function getFileHandle(filename) {
+  try {
+    if (window.showSaveFilePicker) {
+      const options = {
+        suggestedName: filename,
+        types: [
+          {
+            description: 'CSV Files',
+            accept: {
+              'text/csv': ['.csv'],
+            },
+          },
+        ],
+      };
+      return await window.showSaveFilePicker(options);
+    }
+    return null;
+  } catch (err) {
+    console.error('Error getting file handle:', err);
+    return null;
+  }
+}
+
+// Save CSV data to file
+async function saveCSVToFile(csvContent, filename) {
+  try {
+    const fileHandle = await getFileHandle(filename);
+    if (fileHandle) {
+      const writable = await fileHandle.createWritable();
+      await writable.write(csvContent);
+      await writable.close();
+      return true;
+    } else {
+      // Fallback to blob download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return true;
+    }
+  } catch (err) {
+    console.error('Error saving CSV file:', err);
+    return false;
+  }
+}
+
+// Export all data to multiple CSV files for full backup
+async function exportAllData() {
   const inventory = getInventory();
   const checkoutHistory = getCheckoutHistory();
-  const barcodes = getBarcodes();
+  const deliveries = getDeliveries();
+  const cableTypes = getCableTypes();
   
-  // Create CSV sections with headers
-  let csvContent = "## CABLE INVENTORY SYSTEM EXPORT ##\n\n";
+  // Create and save individual CSV files
+  const inventoryCSV = convertToCSV(inventory);
+  const checkoutCSV = convertToCSV(checkoutHistory);
+  const deliveriesCSV = convertToCSV(deliveries);
+  const cableTypesCSV = convertToCSV(cableTypes);
   
-  // Inventory section
-  csvContent += "## INVENTORY DATA ##\n";
-  csvContent += convertToCSV(inventory) + "\n\n";
+  // Save to localStorage as backup
+  localStorage.setItem('inventoryCSV', inventoryCSV);
+  localStorage.setItem('checkoutHistoryCSV', checkoutCSV);
+  localStorage.setItem('deliveriesCSV', deliveriesCSV);
+  localStorage.setItem('cableTypesCSV', cableTypesCSV);
   
-  // Checkout history section
-  csvContent += "## CHECKOUT HISTORY DATA ##\n";
-  csvContent += convertToCSV(checkoutHistory) + "\n\n";
+  // Get current date for filenames in German format (DD.MM.YYYY)
+  const currentDate = formatDateGerman(new Date().toISOString());
   
-  // Barcode section
-  csvContent += "## BARCODE DATA ##\n";
-  csvContent += convertToCSV(barcodes);
-  
-  // Download the combined file
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', 'cable_inventory_backup.csv');
-  link.style.visibility = 'hidden';
-  
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  // Download files
+  try {
+    await saveCSVToFile(inventoryCSV, `cable_inventory_${currentDate}.csv`);
+    await saveCSVToFile(checkoutCSV, `checkout_history_${currentDate}.csv`);
+    await saveCSVToFile(deliveriesCSV, `deliveries_${currentDate}.csv`);
+    await saveCSVToFile(cableTypesCSV, `cable_types_${currentDate}.csv`);
+    
+    showMessage(getText('export_all_success'), 'success');
+  } catch (error) {
+    console.error('Error exporting files:', error);
+    showMessage(getText('export_error'), 'error');
+  }
 }
 
 // Clear all stored data (with confirmation)
@@ -80,7 +137,15 @@ function clearAllData() {
   if (confirm(getText('confirm_clear_all_data'))) {
     localStorage.removeItem('cableInventory');
     localStorage.removeItem('checkoutHistory');
-    localStorage.removeItem('cableBarcodes');
+    localStorage.removeItem('cableBarcodes'); // Still clear even though UI is removed
+    localStorage.removeItem('cableDeliveries');
+    localStorage.removeItem('cableTypes');
+    
+    // Clear CSV backups too
+    localStorage.removeItem('inventoryCSV');
+    localStorage.removeItem('checkoutHistoryCSV');
+    localStorage.removeItem('deliveriesCSV');
+    localStorage.removeItem('cableTypesCSV');
     
     // Reload the page
     window.location.reload();
