@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,8 +10,399 @@
   <link rel="stylesheet" href="css/modern.css">
 </head>
 <body>
-  <!-- Content will remain the same -->
-  
+  <div class="container">
+    <!-- Navigation Tabs -->
+    <nav class="tab-navigation">
+      <div class="tabs">
+        <a href="#" class="tab active" data-tab="dashboard">Dashboard</a>
+        <a href="#" class="tab" data-tab="inventory">Inventory</a>
+        <a href="#" class="tab" data-tab="cable-types">Cable Types</a>
+        <a href="#" class="tab" data-tab="checkout">Checkout</a>
+        <a href="#" class="tab" data-tab="deliveries">Deliveries</a>
+        <a href="#" class="tab" data-tab="low-stock">Low Stock</a>
+        <a href="#" class="tab" data-tab="import-export">Import/Export</a>
+      </div>
+      <div class="settings">
+        <button id="language-toggle" title="Change Language">
+          <span class="lang-icon">🌐</span>
+        </button>
+        <button id="theme-toggle" title="Toggle Dark Mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Tab Contents -->
+    <div class="tab-contents">
+      <!-- Dashboard Tab -->
+      <div id="dashboard" class="tab-content active">
+        <h2>Dashboard</h2>
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <h3>Stock Overview</h3>
+            <div id="stock-chart-container"></div>
+          </div>
+          <div class="dashboard-card">
+            <h3>Recent Activity</h3>
+            <div id="recent-activity"></div>
+          </div>
+          <div class="dashboard-card">
+            <h3>Low Stock Summary</h3>
+            <div id="low-stock-summary"></div>
+          </div>
+          <div class="dashboard-card">
+            <h3>Monthly Statistics</h3>
+            <div id="monthly-stats"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Tab -->
+      <div id="inventory" class="tab-content">
+        <div class="section-header">
+          <h2>Cable Inventory</h2>
+          <div class="section-actions">
+            <input type="text" id="inventory-search" class="search-input" placeholder="Search inventory...">
+            <button id="add-cable-btn" class="btn btn-primary">Add Cable</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="inventory-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Properties</th>
+                <th>Stock</th>
+                <th>Location</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-body">
+              <!-- Inventory items will be added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cable Types Tab -->
+      <div id="cable-types" class="tab-content">
+        <div class="section-header">
+          <h2>Cable Types</h2>
+          <div class="section-actions">
+            <button id="add-type-btn" class="btn btn-primary" onclick="openAddCableTypeModal()">Add Cable Type</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="cable-types-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cable-types-body">
+              <!-- Cable types will be added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Checkout Tab -->
+      <div id="checkout" class="tab-content">
+        <div class="section-header">
+          <h2>Checkout Cables</h2>
+        </div>
+
+        <div class="checkout-form">
+          <div class="form-group">
+            <label for="checkout-cable">Select Cable:</label>
+            <select id="checkout-cable" class="select-input"></select>
+          </div>
+          
+          <div class="form-group">
+            <label for="checkout-quantity">Quantity:</label>
+            <input type="number" id="checkout-quantity" class="number-input" min="1" value="1">
+          </div>
+          
+          <div class="form-group">
+            <label for="checkout-recipient">Recipient:</label>
+            <input type="text" id="checkout-recipient" class="text-input" placeholder="Enter recipient name">
+          </div>
+          
+          <div class="form-group">
+            <label for="checkout-notes">Notes:</label>
+            <textarea id="checkout-notes" class="text-area" placeholder="Add any additional notes"></textarea>
+          </div>
+          
+          <button id="checkout-btn" class="btn btn-primary">Checkout</button>
+        </div>
+
+        <h3>Checkout History</h3>
+        <div class="table-container">
+          <table id="checkout-history-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Cable</th>
+                <th>Quantity</th>
+                <th>Recipient</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="checkout-history-body">
+              <!-- Checkout history will be added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Deliveries Tab -->
+      <div id="deliveries" class="tab-content">
+        <div class="section-header">
+          <h2>Cable Deliveries</h2>
+          <div class="section-actions">
+            <button id="add-delivery-btn" class="btn btn-primary">Add Delivery</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="deliveries-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Items</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="deliveries-body">
+              <!-- Deliveries will be added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Low Stock Tab -->
+      <div id="low-stock" class="tab-content">
+        <div class="section-header">
+          <h2>Low Stock Alert</h2>
+          <div class="section-actions">
+            <div class="form-group inline">
+              <label for="low-stock-threshold">Threshold:</label>
+              <input type="number" id="low-stock-threshold" class="number-input" min="1" value="10">
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table id="low-stock-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Properties</th>
+                <th>Stock</th>
+                <th>Location</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="low-stock-body">
+              <!-- Low stock items will be added here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Import/Export Tab -->
+      <div id="import-export" class="tab-content">
+        <h2>Data Import/Export</h2>
+        
+        <div class="export-section">
+          <h3>Export Data</h3>
+          <div class="form-group">
+            <label for="export-type">Select data to export:</label>
+            <select id="export-type" class="select-input">
+              <option value="inventory">Inventory</option>
+              <option value="cable-types">Cable Types</option>
+              <option value="checkout">Checkout History</option>
+              <option value="deliveries">Deliveries</option>
+              <option value="all">All Data</option>
+            </select>
+          </div>
+          <button id="export-btn" class="btn">Export to CSV</button>
+        </div>
+        
+        <div class="import-section">
+          <h3>Import Data</h3>
+          <div class="form-group">
+            <label for="import-type">Select data type to import:</label>
+            <select id="import-type" class="select-input">
+              <option value="inventory">Inventory</option>
+              <option value="cable-types">Cable Types</option>
+              <option value="checkout">Checkout History</option>
+              <option value="deliveries">Deliveries</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="import-file">Select CSV file:</label>
+            <input type="file" id="import-file" accept=".csv">
+          </div>
+          <button id="import-btn" class="btn">Import from CSV</button>
+        </div>
+        
+        <div class="danger-zone">
+          <h3>Danger Zone</h3>
+          <button id="clear-data-btn" class="btn btn-danger" onclick="clearAllData()">Clear All Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <!-- Cable Form Modal -->
+  <div id="cable-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="cable-modal-title">Add Cable</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="cable-form">
+        <input type="hidden" id="cable-edit-mode" value="add">
+        
+        <div class="form-group">
+          <label for="cable-id">Cable ID:</label>
+          <input type="text" id="cable-id" class="text-input" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label for="cable-type">Cable Type:</label>
+          <select id="cable-type" class="select-input"></select>
+        </div>
+        
+        <div id="cable-properties-container">
+          <!-- Dynamic properties will be added here -->
+        </div>
+        
+        <div class="form-group">
+          <label for="cable-stock">Stock:</label>
+          <input type="number" id="cable-stock" class="number-input" min="0" value="0">
+        </div>
+        
+        <div class="form-group">
+          <label for="cable-location">Location:</label>
+          <input type="text" id="cable-location" class="text-input" placeholder="Storage location">
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary"><span id="save-cable-text">Save</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cable Type Modal -->
+  <div id="type-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="type-modal-title">Add Cable Type</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="type-form" onsubmit="saveCableType(event)">
+        <input type="hidden" id="type-edit-mode" value="add">
+        
+        <div class="form-group">
+          <label for="type-id">Type ID:</label>
+          <input type="text" id="type-id" class="text-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="type-name">Name:</label>
+          <input type="text" id="type-name" class="text-input" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="type-category">Category:</label>
+          <input type="text" id="type-category" class="text-input" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Properties:</label>
+          <div id="properties-container"></div>
+          <button type="button" class="btn" onclick="addPropertyField()">Add Property</button>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn close-modal" onclick="closeTypeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary"><span id="save-type-text">Save</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delivery Form Modal -->
+  <div id="delivery-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="delivery-modal-title">Add Delivery</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="delivery-form">
+        <input type="hidden" id="delivery-edit-mode" value="add">
+        
+        <div class="form-group">
+          <label for="delivery-id">Delivery ID:</label>
+          <input type="text" id="delivery-id" class="text-input" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label for="delivery-date">Date:</label>
+          <input type="date" id="delivery-date" class="text-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="delivery-status">Status:</label>
+          <select id="delivery-status" class="select-input">
+            <option value="pending">Pending</option>
+            <option value="delivered">Delivered</option>
+            <option value="partial">Partially Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="delivery-reference">Reference Number:</label>
+          <input type="text" id="delivery-reference" class="text-input" placeholder="Optional reference number">
+        </div>
+        
+        <div class="form-group">
+          <label for="delivery-notes">Notes:</label>
+          <textarea id="delivery-notes" class="text-area" placeholder="Add any additional notes"></textarea>
+        </div>
+        
+        <h4>Delivery Items</h4>
+        <div id="delivery-items-container">
+          <!-- Delivery items will be added here -->
+        </div>
+        
+        <button type="button" class="btn" id="add-delivery-item">Add Item</button>
+        
+        <div class="form-actions">
+          <button type="button" class="btn close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary"><span id="save-delivery-text">Save</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- JavaScript -->
   <script src="js/theme.js"></script>
   <script src="js/language.js"></script>
