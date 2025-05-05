@@ -38,11 +38,32 @@ function createInventoryRow(cable) {
   const typeCell = document.createElement('td');
   typeCell.textContent = cable.type;
   
-  const lengthCell = document.createElement('td');
-  lengthCell.textContent = cable.length;
-  
-  const colorCell = document.createElement('td');
-  colorCell.textContent = cable.color;
+  const propertiesCell = document.createElement('td');
+  if (cable.properties && Object.keys(cable.properties).length > 0) {
+    const propsList = document.createElement('ul');
+    propsList.style.listStyle = 'none';
+    propsList.style.padding = '0';
+    propsList.style.margin = '0';
+    
+    Object.entries(cable.properties).forEach(([key, value]) => {
+      const propItem = document.createElement('li');
+      
+      // Special handling for color properties
+      if (key.toLowerCase().includes('color') && typeof value === 'string' && value.startsWith('#')) {
+        propItem.innerHTML = `<strong>${key}:</strong> <span style="display:inline-block; width:12px; height:12px; background:${value}; border:1px solid #ccc; margin-right:5px;"></span>${value}`;
+      } else if (typeof value === 'boolean') {
+        propItem.innerHTML = `<strong>${key}:</strong> ${value ? '✓' : '✗'}`;
+      } else {
+        propItem.innerHTML = `<strong>${key}:</strong> ${value}`;
+      }
+      
+      propsList.appendChild(propItem);
+    });
+    
+    propertiesCell.appendChild(propsList);
+  } else {
+    propertiesCell.textContent = '-';
+  }
   
   const stockCell = document.createElement('td');
   stockCell.textContent = cable.stock;
@@ -53,7 +74,7 @@ function createInventoryRow(cable) {
   }
   
   const locationCell = document.createElement('td');
-  locationCell.textContent = cable.location;
+  locationCell.textContent = cable.location || '-';
   
   const actionsCell = document.createElement('td');
   
@@ -80,8 +101,7 @@ function createInventoryRow(cable) {
   // Append all cells to row
   row.appendChild(idCell);
   row.appendChild(typeCell);
-  row.appendChild(lengthCell);
-  row.appendChild(colorCell);
+  row.appendChild(propertiesCell);
   row.appendChild(stockCell);
   row.appendChild(locationCell);
   row.appendChild(actionsCell);
@@ -189,6 +209,271 @@ function getCableById(cableId) {
   return inventory.find(cable => cable.id === cableId);
 }
 
+// Open modal for adding a new cable
+function openAddCableModal() {
+  document.getElementById('modal-title').textContent = getText('add_new_cable');
+  document.getElementById('save-cable-text').textContent = getText('save');
+  document.getElementById('edit-mode').value = 'add';
+  
+  // Reset form fields
+  document.getElementById('cable-form').reset();
+  
+  // Clear properties container
+  document.getElementById('cable-properties-container').innerHTML = '';
+  
+  // Generate a unique ID
+  document.getElementById('cable-id').value = generateUniqueId();
+  
+  // Update type select and associated properties
+  updateCableTypeSelects();
+  
+  // Show modal
+  document.getElementById('cable-modal').style.display = 'block';
+}
+
+// Open modal for editing a cable
+function openEditCableModal(cableId) {
+  const inventory = getInventory();
+  const cable = inventory.find(item => item.id === cableId);
+  
+  if (!cable) return;
+  
+  document.getElementById('modal-title').textContent = getText('edit_cable');
+  document.getElementById('save-cable-text').textContent = getText('update');
+  document.getElementById('edit-mode').value = 'edit';
+  
+  // Fill form fields with cable data
+  document.getElementById('cable-id').value = cable.id;
+  
+  // Update type selects
+  updateCableTypeSelects();
+  
+  // Set type and trigger properties update
+  const typeSelect = document.getElementById('cable-type');
+  if (typeSelect) {
+    typeSelect.value = cable.typeId;
+    
+    // Trigger change event to update properties
+    const event = new Event('change');
+    typeSelect.dispatchEvent(event);
+    
+    // Fill in property values
+    if (cable.properties) {
+      setTimeout(() => {
+        const propertyInputs = document.querySelectorAll('.cable-property');
+        propertyInputs.forEach(input => {
+          const propName = input.dataset.name;
+          if (propName && cable.properties[propName] !== undefined) {
+            if (input.type === 'checkbox') {
+              input.checked = cable.properties[propName];
+            } else {
+              input.value = cable.properties[propName];
+            }
+          }
+        });
+      }, 50);
+    }
+  }
+  
+  document.getElementById('cable-stock').value = cable.stock;
+  document.getElementById('cable-location').value = cable.location || '';
+  
+  // Show modal
+  document.getElementById('cable-modal').style.display = 'block';
+}
+
+// Update cable type selects
+function updateCableTypeSelects() {
+  const typeSelect = document.getElementById('cable-type');
+  const types = getCableTypes();
+  
+  if (!typeSelect) return;
+  
+  // Save current value if any
+  const currentValue = typeSelect.value;
+  
+  // Clear options
+  typeSelect.innerHTML = '';
+  
+  // Add empty option
+  const emptyOption = document.createElement('option');
+  emptyOption.value = '';
+  emptyOption.textContent = getText('select_cable_type');
+  typeSelect.appendChild(emptyOption);
+  
+  // Add type options
+  types.forEach(type => {
+    const option = document.createElement('option');
+    option.value = type.id;
+    option.textContent = type.name;
+    option.dataset.category = type.category;
+    typeSelect.appendChild(option);
+  });
+  
+  // Restore value if possible
+  if (currentValue && typeSelect.querySelector(`option[value="${currentValue}"]`)) {
+    typeSelect.value = currentValue;
+    
+    // Trigger change event
+    const event = new Event('change');
+    typeSelect.dispatchEvent(event);
+  }
+  
+  // Add change event to update properties when type changes
+  typeSelect.addEventListener('change', function() {
+    updateCableProperties(this, document.getElementById('cable-properties-container'));
+  });
+}
+
+// Update cable properties based on selected cable type
+function updateCableProperties(typeSelect, propertiesContainer) {
+  const typeId = typeSelect.value;
+  propertiesContainer.innerHTML = '';
+  
+  if (!typeId) return;
+  
+  const types = getCableTypes();
+  const selectedType = types.find(type => type.id === typeId);
+  
+  if (!selectedType || !selectedType.properties || !selectedType.properties.length) {
+    return;
+  }
+  
+  const propertiesTitle = document.createElement('h5');
+  propertiesTitle.textContent = getText('properties');
+  propertiesTitle.style.marginBottom = '1rem';
+  propertiesTitle.style.marginTop = '1rem';
+  propertiesContainer.appendChild(propertiesTitle);
+  
+  const propertiesGrid = document.createElement('div');
+  propertiesGrid.style.display = 'grid';
+  propertiesGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
+  propertiesGrid.style.gap = '1rem';
+  
+  selectedType.properties.forEach(prop => {
+    const propContainer = document.createElement('div');
+    propContainer.className = 'form-group';
+    
+    const propLabel = document.createElement('label');
+    propLabel.textContent = prop.name;
+    
+    let propInput;
+    
+    switch (prop.type) {
+      case 'boolean':
+        propInput = document.createElement('input');
+        propInput.type = 'checkbox';
+        propInput.className = 'checkbox-input';
+        propInput.style.marginLeft = '0.5rem';
+        propContainer.style.display = 'flex';
+        propContainer.style.alignItems = 'center';
+        break;
+        
+      case 'color':
+        propInput = document.createElement('input');
+        propInput.type = 'color';
+        propInput.className = 'color-input';
+        propInput.value = '#000000';
+        break;
+        
+      case 'number':
+        propInput = document.createElement('input');
+        propInput.type = 'number';
+        propInput.className = 'number-input';
+        break;
+        
+      default: // text
+        propInput = document.createElement('input');
+        propInput.type = 'text';
+        propInput.className = 'text-input';
+    }
+    
+    propInput.dataset.name = prop.name;
+    propInput.className += ' cable-property';
+    
+    propContainer.appendChild(propLabel);
+    if (prop.type !== 'boolean') {
+      propContainer.appendChild(propInput);
+    }
+    
+    propertiesGrid.appendChild(propContainer);
+  });
+  
+  propertiesContainer.appendChild(propertiesGrid);
+}
+
+// Save cable data from form
+function saveCable(e) {
+  e.preventDefault();
+  
+  const mode = document.getElementById('edit-mode').value;
+  const cableId = document.getElementById('cable-id').value;
+  const cableTypeSelect = document.getElementById('cable-type');
+  const cableTypeId = cableTypeSelect.value;
+  const cableType = cableTypeSelect.options[cableTypeSelect.selectedIndex].text;
+  const cableStock = parseInt(document.getElementById('cable-stock').value);
+  const cableLocation = document.getElementById('cable-location').value;
+  
+  // Validate type selection
+  if (!cableTypeId) {
+    showMessage(getText('select_cable_type'), 'error');
+    return;
+  }
+  
+  // Collect properties
+  const properties = {};
+  const propertyInputs = document.querySelectorAll('.cable-property');
+  
+  propertyInputs.forEach(input => {
+    const propName = input.dataset.name;
+    let propValue;
+    
+    if (input.type === 'checkbox') {
+      propValue = input.checked;
+    } else {
+      propValue = input.value;
+    }
+    
+    properties[propName] = propValue;
+  });
+  
+  const cableData = {
+    id: cableId,
+    typeId: cableTypeId,
+    type: cableType,
+    properties: properties,
+    stock: cableStock,
+    location: cableLocation
+  };
+  
+  if (mode === 'add') {
+    addCable(cableData);
+  } else {
+    updateCable(cableData);
+  }
+  
+  closeModal();
+}
+
+// Generate a unique ID for new cables
+function generateUniqueId() {
+  return 'CAB-' + Date.now().toString().slice(-6);
+}
+
+// Filter inventory table based on search term
+function filterInventoryTable(searchTerm) {
+  const rows = document.getElementById('inventory-body').querySelectorAll('tr');
+  
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    if (text.includes(searchTerm)) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+
 // Initialize with sample data if empty
 function initializeSampleData() {
   const inventory = getInventory();
@@ -197,41 +482,61 @@ function initializeSampleData() {
     const sampleData = [
       {
         id: 'CAB-001',
-        type: 'HDMI 2.1',
-        length: 2.0,
-        color: 'Black',
+        typeId: 'TYPE-003',
+        type: 'HDMI',
+        properties: {
+          'Version': '2.1',
+          'Length': 2,
+          'Color': '#000000'
+        },
         stock: 15,
         location: 'Shelf A1'
       },
       {
         id: 'CAB-002',
-        type: 'USB-C to USB-A',
-        length: 1.0,
-        color: 'White',
+        typeId: 'TYPE-002',
+        type: 'Copper Cable',
+        properties: {
+          'AWG': 24,
+          'Shielded': true,
+          'Color': '#808080'
+        },
         stock: 8,
         location: 'Shelf B2'
       },
       {
         id: 'CAB-003',
-        type: 'Ethernet Cat6',
-        length: 3.0,
-        color: 'Blue',
+        typeId: 'TYPE-002',
+        type: 'Copper Cable',
+        properties: {
+          'AWG': 22,
+          'Shielded': false,
+          'Color': '#00ff00'
+        },
         stock: 5,
         location: 'Shelf A2'
       },
       {
         id: 'CAB-004',
-        type: 'DisplayPort 1.4',
-        length: 1.5,
-        color: 'Black',
+        typeId: 'TYPE-001',
+        type: 'Fiber Optic',
+        properties: {
+          'OM Standard': 'OM3',
+          'Connector Type': 'LC',
+          'Color': '#0000ff'
+        },
         stock: 3,
         location: 'Shelf C1'
       },
       {
         id: 'CAB-005',
-        type: 'VGA',
-        length: 1.8,
-        color: 'Gray',
+        typeId: 'TYPE-001',
+        type: 'Fiber Optic',
+        properties: {
+          'OM Standard': 'OM4',
+          'Connector Type': 'SC',
+          'Color': '#ff00ff'
+        },
         stock: 2,
         location: 'Shelf D3'
       }

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,17 +34,170 @@
     <!-- Fixed navigation with sticky position -->
     <nav>
       <ul class="tabs">
-        <li><a href="#" class="tab active" data-tab="inventory" id="tab-inventory">Inventory</a></li>
+        <li><a href="#" class="tab active" data-tab="dashboard" id="tab-dashboard">Dashboard</a></li>
+        <li><a href="#" class="tab" data-tab="inventory" id="tab-inventory">Inventory</a></li>
+        <li><a href="#" class="tab" data-tab="cable-types" id="tab-cable-types">Cable Types</a></li>
+        <li><a href="#" class="tab" data-tab="deliveries" id="tab-deliveries">Deliveries</a></li>
         <li><a href="#" class="tab" data-tab="low-stock" id="tab-low-stock">Low Stock</a></li>
-        <li><a href="#" class="tab" data-tab="checkout" id="tab-checkout">Cable Checkout</a></li>
-        <li><a href="#" class="tab" data-tab="scan" id="tab-scan">Barcode Scan</a></li>
+        <li><a href="#" class="tab" data-tab="checkout" id="tab-checkout">Checkout</a></li>
+        <li><a href="#" class="tab" data-tab="scan" id="tab-scan">Barcode</a></li>
         <li><a href="#" class="tab" data-tab="import-export" id="tab-import-export">Import/Export</a></li>
       </ul>
     </nav>
 
     <main>
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="tab-content active">
+        <div class="section-header">
+          <h2 id="dashboard-title">Dashboard</h2>
+        </div>
+        
+        <!-- Summary Stats -->
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a1 1 0 0 1 1 1v.5a.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z"/><path d="M6 11V8a6 6 0 0 1 12 0v3"/></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-title" id="total-stock-title">Total Stock</div>
+              <div class="stat-value" id="total-stock-value">0</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M9 4h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M17 4h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M13 10h4"/><path d="M13 14h4"/><path d="M3 20h18"/></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-title" id="unique-types-title">Unique Cable Types</div>
+              <div class="stat-value" id="unique-types-value">0</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-title" id="total-value-title">Inventory Value</div>
+              <div class="stat-value" id="total-value-value">0</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon warning-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-title" id="low-stock-items-title">Low Stock Items</div>
+              <div class="stat-value" id="low-stock-count">0</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="dashboard-row">
+          <!-- Stock summary and category distribution -->
+          <div class="dashboard-card">
+            <h3 id="category-distribution-title">Category Distribution</h3>
+            <div id="category-distribution" class="category-distribution"></div>
+          </div>
+          
+          <!-- Low stock summary -->
+          <div class="dashboard-card">
+            <h3 id="low-stock-summary-title">Low Stock Items</h3>
+            <div id="low-stock-summary" class="low-stock-summary"></div>
+          </div>
+        </div>
+        
+        <div class="dashboard-row">
+          <!-- Recent activities -->
+          <div class="dashboard-card">
+            <h3 id="recent-deliveries-title">Recent Deliveries</h3>
+            <div id="recent-deliveries" class="activity-list"></div>
+          </div>
+          
+          <div class="dashboard-card">
+            <h3 id="recent-checkouts-title">Recent Checkouts</h3>
+            <div id="recent-checkouts" class="activity-list"></div>
+          </div>
+        </div>
+        
+        <div class="dashboard-row">
+          <!-- Charts -->
+          <div class="dashboard-card">
+            <h3 id="stock-trend-title">Stock Trend</h3>
+            <div class="chart-container">
+              <canvas id="stock-trend-chart" width="600" height="300"></canvas>
+            </div>
+          </div>
+          
+          <div class="dashboard-card">
+            <h3 id="type-distribution-title">Type Distribution</h3>
+            <div class="chart-container">
+              <canvas id="type-distribution-chart" width="400" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cable Types Section -->
+      <section id="cable-types" class="tab-content">
+        <div class="section-header">
+          <h2 id="cable-types-title">Cable Types</h2>
+          <div class="controls">
+            <button id="add-cable-type-btn" class="btn btn-primary" onclick="openAddCableTypeModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              <span id="add-type-btn-text">Add Cable Type</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="cable-types-table">
+            <thead>
+              <tr>
+                <th id="th-type-id">ID</th>
+                <th id="th-type-name">Name</th>
+                <th id="th-type-category">Category</th>
+                <th id="th-type-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cable-types-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Deliveries Section -->
+      <section id="deliveries" class="tab-content">
+        <div class="section-header">
+          <h2 id="deliveries-title">Cable Deliveries</h2>
+          <div class="controls">
+            <button id="add-delivery-btn" class="btn btn-primary" onclick="openAddDeliveryModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              <span id="add-delivery-btn-text">New Delivery</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="deliveries-table">
+            <thead>
+              <tr>
+                <th id="th-delivery-id">ID</th>
+                <th id="th-delivery-date">Date</th>
+                <th id="th-delivery-supplier">Supplier</th>
+                <th id="th-delivery-status">Status</th>
+                <th id="th-delivery-items">Items</th>
+                <th id="th-delivery-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="deliveries-body"></tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- Inventory Section -->
-      <section id="inventory" class="tab-content active">
+      <section id="inventory" class="tab-content">
         <div class="section-header">
           <h2 id="inventory-title">Cable Inventory</h2>
           <div class="controls">
@@ -61,8 +215,7 @@
               <tr>
                 <th id="th-id">ID</th>
                 <th id="th-type">Type</th>
-                <th id="th-length">Length (m)</th>
-                <th id="th-color">Color</th>
+                <th id="th-properties">Properties</th>
                 <th id="th-stock">Stock</th>
                 <th id="th-location">Location</th>
                 <th id="th-actions">Actions</th>
@@ -166,7 +319,7 @@
           <div class="barcode-registration" id="barcode-registration">
             <h3 id="register-barcode-title">Register New Barcode</h3>
             <div class="form-group">
-              <label for="barcode-cable-select" id="barcode-cable-select-label">Cable Type:</label>
+              <label for="barcode-cable-select" id="barcode-cable-select-label">Cable:</label>
               <select id="barcode-cable-select" class="select-input"></select>
             </div>
             <div class="form-group">
@@ -194,6 +347,8 @@
                 <label id="import-type-label">Select data to import:</label>
                 <select id="import-type" class="select-input">
                   <option value="inventory">Inventory</option>
+                  <option value="cable-types">Cable Types</option>
+                  <option value="deliveries">Deliveries</option>
                   <option value="checkout">Checkout History</option>
                   <option value="barcodes">Barcodes</option>
                 </select>
@@ -215,6 +370,8 @@
                 <label id="export-type-label">Select data to export:</label>
                 <select id="export-type" class="select-input">
                   <option value="inventory">Inventory</option>
+                  <option value="cable-types">Cable Types</option>
+                  <option value="deliveries">Deliveries</option>
                   <option value="checkout">Checkout History</option>
                   <option value="barcodes">Barcodes</option>
                 </select>
@@ -238,20 +395,13 @@
             <form id="cable-form">
               <div class="form-group">
                 <label for="cable-id" id="cable-id-label">Cable ID:</label>
-                <input type="text" id="cable-id" required class="text-input">
+                <input type="text" id="cable-id" required class="text-input" readonly>
               </div>
               <div class="form-group">
                 <label for="cable-type" id="cable-type-label">Cable Type:</label>
-                <input type="text" id="cable-type" required class="text-input">
+                <select id="cable-type" required class="select-input"></select>
               </div>
-              <div class="form-group">
-                <label for="cable-length" id="cable-length-label">Length (m):</label>
-                <input type="number" id="cable-length" step="0.1" min="0" required class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="cable-color" id="cable-color-label">Color:</label>
-                <input type="text" id="cable-color" class="text-input">
-              </div>
+              <div id="cable-properties-container"></div>
               <div class="form-group">
                 <label for="cable-stock" id="cable-stock-label">Stock:</label>
                 <input type="number" id="cable-stock" min="0" required class="number-input">
@@ -270,20 +420,122 @@
           </div>
         </div>
       </div>
+
+      <!-- Add/Edit Cable Type Modal -->
+      <div id="type-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="type-modal-title">Add New Cable Type</h2>
+            <button id="close-type-modal" class="close-btn" onclick="closeTypeModal()">×</button>
+          </div>
+          <div class="modal-body">
+            <form id="type-form" onsubmit="saveCableType(event)">
+              <div class="form-group">
+                <label for="type-id" id="type-id-label">Type ID:</label>
+                <input type="text" id="type-id" required class="text-input" readonly>
+              </div>
+              <div class="form-group">
+                <label for="type-name" id="type-name-label">Type Name:</label>
+                <input type="text" id="type-name" required class="text-input">
+              </div>
+              <div class="form-group">
+                <label for="type-category" id="type-category-label">Category:</label>
+                <input type="text" id="type-category" required class="text-input">
+              </div>
+              <div class="properties-section">
+                <div class="properties-header">
+                  <h3 id="properties-title">Properties</h3>
+                  <button type="button" class="btn" onclick="addPropertyField()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    <span id="add-property-text">Add Property</span>
+                  </button>
+                </div>
+                <div id="properties-container">
+                  <!-- Property fields will be added here -->
+                </div>
+              </div>
+              <input type="hidden" id="type-edit-mode" value="add">
+              <div class="modal-footer">
+                <button type="submit" id="save-type" class="btn btn-primary">
+                  <span id="save-type-text">Save</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Delivery Modal -->
+      <div id="delivery-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="delivery-modal-title">Add New Delivery</h2>
+            <button id="close-delivery-modal" class="close-btn" onclick="closeDeliveryModal()">×</button>
+          </div>
+          <div class="modal-body">
+            <form id="delivery-form" onsubmit="saveDelivery(event)">
+              <div class="form-group">
+                <label for="delivery-id" id="delivery-id-label">Delivery ID:</label>
+                <input type="text" id="delivery-id" required class="text-input" readonly>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="delivery-date" id="delivery-date-label">Date:</label>
+                  <input type="date" id="delivery-date" required class="text-input">
+                </div>
+                <div class="form-group">
+                  <label for="delivery-supplier" id="delivery-supplier-label">Supplier:</label>
+                  <input type="text" id="delivery-supplier" required class="text-input">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="delivery-reference" id="delivery-reference-label">Reference Number:</label>
+                <input type="text" id="delivery-reference" class="text-input">
+              </div>
+              <div class="form-group">
+                <label for="delivery-notes" id="delivery-notes-label">Notes:</label>
+                <textarea id="delivery-notes" class="text-area"></textarea>
+              </div>
+              
+              <div class="delivery-items-section">
+                <div class="delivery-items-header">
+                  <h3 id="delivery-items-title">Items</h3>
+                  <button type="button" class="btn" onclick="addDeliveryItem()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    <span id="add-item-text">Add Item</span>
+                  </button>
+                </div>
+                <div id="delivery-items-container">
+                  <!-- Delivery items will be added here -->
+                </div>
+              </div>
+              
+              <div class="modal-footer">
+                <button type="submit" id="save-delivery" class="btn btn-primary">
+                  <span id="save-delivery-text">Save</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </main>
     
     <footer>
-      <p>© 2025 Cable Inventory Management System - <span id="version">v1.1.0</span></p>
+      <p>© 2025 Cable Inventory Management System - <span id="version">v2.0.0</span></p>
     </footer>
   </div>
 
   <script src="js/language.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/cable-types.js"></script>
   <script src="js/inventory.js"></script>
   <script src="js/low-stock.js"></script>
   <script src="js/checkout.js"></script>
   <script src="js/barcode.js"></script>
+  <script src="js/deliveries.js"></script>
+  <script src="js/dashboard.js"></script>
   <script src="js/import-export.js"></script>
   <script src="js/app.js"></script>
 </body>

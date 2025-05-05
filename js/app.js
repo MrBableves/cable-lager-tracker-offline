@@ -37,6 +37,9 @@ function initializeTabs() {
 
 // Load all data from localStorage
 function loadAllData() {
+  // Load cable types data
+  loadCableTypesData();
+  
   // Load inventory data
   loadInventoryData();
   
@@ -48,6 +51,12 @@ function loadAllData() {
   
   // Initialize barcode system
   initBarcodeSystem();
+  
+  // Load deliveries data
+  loadDeliveriesData();
+  
+  // Load dashboard data
+  loadDashboardData();
 }
 
 // Set up global event listeners
@@ -65,7 +74,10 @@ function setupEventListeners() {
   document.getElementById('checkout-btn').addEventListener('click', checkoutCable);
   
   // Low stock threshold change
-  document.getElementById('low-stock-threshold').addEventListener('change', updateLowStockTable);
+  document.getElementById('low-stock-threshold').addEventListener('change', function() {
+    updateLowStockTable();
+    updateLowStockSummary(); // Update dashboard low stock summary
+  });
   
   // Import button click
   document.getElementById('import-btn').addEventListener('click', importData);
@@ -94,96 +106,26 @@ function setupEventListeners() {
   
   // Close modal when clicking outside
   window.addEventListener('click', function(e) {
-    const modal = document.getElementById('cable-modal');
-    if (e.target === modal) {
-      closeModal();
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  });
+  
+  // Window resize event for charts
+  window.addEventListener('resize', function() {
+    // Redraw charts when window is resized
+    if (document.getElementById('dashboard').classList.contains('active')) {
+      initCharts();
     }
   });
-}
-
-// Open modal for adding a new cable
-function openAddCableModal() {
-  document.getElementById('modal-title').textContent = getText('add_new_cable');
-  document.getElementById('save-cable-text').textContent = getText('save');
-  document.getElementById('edit-mode').value = 'add';
   
-  // Reset form fields
-  document.getElementById('cable-form').reset();
-  
-  // Generate a unique ID
-  document.getElementById('cable-id').value = generateUniqueId();
-  
-  // Show modal
-  document.getElementById('cable-modal').style.display = 'block';
-}
-
-// Open modal for editing a cable
-function openEditCableModal(cableId) {
-  const inventory = getInventory();
-  const cable = inventory.find(item => item.id === cableId);
-  
-  if (!cable) return;
-  
-  document.getElementById('modal-title').textContent = getText('edit_cable');
-  document.getElementById('save-cable-text').textContent = getText('update');
-  document.getElementById('edit-mode').value = 'edit';
-  
-  // Fill form fields with cable data
-  document.getElementById('cable-id').value = cable.id;
-  document.getElementById('cable-type').value = cable.type;
-  document.getElementById('cable-length').value = cable.length;
-  document.getElementById('cable-color').value = cable.color;
-  document.getElementById('cable-stock').value = cable.stock;
-  document.getElementById('cable-location').value = cable.location;
-  
-  // Show modal
-  document.getElementById('cable-modal').style.display = 'block';
-}
-
-// Close modal
-function closeModal() {
-  document.getElementById('cable-modal').style.display = 'none';
-}
-
-// Save cable data from form
-function saveCable(e) {
-  e.preventDefault();
-  
-  const mode = document.getElementById('edit-mode').value;
-  const cableData = {
-    id: document.getElementById('cable-id').value,
-    type: document.getElementById('cable-type').value,
-    length: parseFloat(document.getElementById('cable-length').value),
-    color: document.getElementById('cable-color').value,
-    stock: parseInt(document.getElementById('cable-stock').value),
-    location: document.getElementById('cable-location').value
-  };
-  
-  if (mode === 'add') {
-    addCable(cableData);
-  } else {
-    updateCable(cableData);
-  }
-  
-  closeModal();
-}
-
-// Generate a unique ID for new cables
-function generateUniqueId() {
-  return 'CAB-' + Date.now().toString().slice(-6);
-}
-
-// Filter inventory table based on search term
-function filterInventoryTable(searchTerm) {
-  const rows = document.getElementById('inventory-body').querySelectorAll('tr');
-  
-  rows.forEach(row => {
-    const text = row.textContent.toLowerCase();
-    if (text.includes(searchTerm)) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
+  // Tab change events for chart rendering
+  document.getElementById('tab-dashboard').addEventListener('click', function() {
+    // Delay to ensure DOM is ready
+    setTimeout(initCharts, 100);
   });
 }
 

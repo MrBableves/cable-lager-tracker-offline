@@ -1,194 +1,81 @@
-
 // Import/Export Functions
-
-// Import data from CSV
-function importData() {
-  const importType = document.getElementById('import-type').value;
-  const fileInput = document.getElementById('import-file');
-  
-  if (!fileInput.files || fileInput.files.length === 0) {
-    showMessage(getText('please_select_file'), 'error');
-    return;
-  }
-  
-  const file = fileInput.files[0];
-  const reader = new FileReader();
-  
-  reader.onload = function(e) {
-    const csvData = e.target.result;
-    
-    try {
-      switch(importType) {
-        case 'inventory':
-          importInventoryData(csvData);
-          break;
-        case 'checkout':
-          importCheckoutData(csvData);
-          break;
-        case 'barcodes':
-          importBarcodeData(csvData);
-          break;
-      }
-      
-      // Reset file input
-      fileInput.value = '';
-    } catch (error) {
-      showMessage(`${getText('import_error')}: ${error.message}`, 'error');
-    }
-  };
-  
-  reader.readAsText(file);
-}
-
-// Parse CSV data to array of objects
-function parseCSV(csvText) {
-  const lines = csvText.split(/\r?\n/).filter(line => line.trim());
-  const headers = lines[0].split(',').map(header => header.trim());
-  
-  const result = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(val => val.trim());
-    
-    if (values.length !== headers.length) continue;
-    
-    const entry = {};
-    headers.forEach((header, index) => {
-      entry[header] = values[index];
-    });
-    
-    result.push(entry);
-  }
-  
-  return result;
-}
-
-// Import inventory data from CSV
-function importInventoryData(csvData) {
-  const data = parseCSV(csvData);
-  
-  // Validate data structure
-  if (data.length === 0 || !data[0].id || !data[0].type || !data[0].stock) {
-    showMessage(getText('invalid_inventory_format'), 'error');
-    return;
-  }
-  
-  // Convert data types
-  const inventory = data.map(item => ({
-    id: item.id,
-    type: item.type,
-    length: parseFloat(item.length) || 0,
-    color: item.color || '',
-    stock: parseInt(item.stock) || 0,
-    location: item.location || ''
-  }));
-  
-  // Save to localStorage
-  saveInventory(inventory);
-  loadInventoryData();
-  updateLowStockTable();
-  
-  showMessage(`${getText('imported')} ${inventory.length} ${getText('inventory_items')}`, 'success');
-}
-
-// Import checkout history data from CSV
-function importCheckoutData(csvData) {
-  const data = parseCSV(csvData);
-  
-  // Validate data structure
-  if (data.length === 0 || !data[0].id || !data[0].cableId || !data[0].date) {
-    showMessage(getText('invalid_checkout_format'), 'error');
-    return;
-  }
-  
-  // Convert data types
-  const history = data.map(item => ({
-    id: item.id,
-    date: item.date,
-    cableId: item.cableId,
-    quantity: parseInt(item.quantity) || 1,
-    recipient: item.recipient || '',
-    notes: item.notes || ''
-  }));
-  
-  // Save to localStorage
-  saveCheckoutHistory(history);
-  loadCheckoutHistory();
-  
-  showMessage(`${getText('imported')} ${history.length} ${getText('checkout_records')}`, 'success');
-}
-
-// Import barcode data from CSV
-function importBarcodeData(csvData) {
-  const data = parseCSV(csvData);
-  
-  // Validate data structure
-  if (data.length === 0 || !data[0].code || !data[0].cableId) {
-    showMessage(getText('invalid_barcode_format'), 'error');
-    return;
-  }
-  
-  // Convert data types
-  const barcodes = data.map(item => ({
-    code: item.code,
-    cableId: item.cableId,
-    dateRegistered: item.dateRegistered || new Date().toISOString()
-  }));
-  
-  // Save to localStorage
-  saveBarcodes(barcodes);
-  
-  showMessage(`${getText('imported')} ${barcodes.length} ${getText('barcodes')}`, 'success');
-}
 
 // Export data to CSV
 function exportData() {
   const exportType = document.getElementById('export-type').value;
+  let data = [];
+  let filename = '';
   
-  try {
-    switch(exportType) {
-      case 'inventory':
-        exportInventoryData();
-        break;
-      case 'checkout':
-        exportCheckoutData();
-        break;
-      case 'barcodes':
-        exportBarcodeData();
-        break;
-    }
-  } catch (error) {
-    showMessage(`${getText('export_error')}: ${error.message}`, 'error');
+  switch(exportType) {
+    case 'inventory':
+      data = getInventory();
+      filename = 'cable_inventory';
+      break;
+    case 'cable-types':
+      data = getCableTypes();
+      filename = 'cable_types';
+      break;
+    case 'deliveries':
+      data = getDeliveries();
+      filename = 'cable_deliveries';
+      break;
+    case 'checkout':
+      data = getCheckoutHistory();
+      filename = 'checkout_history';
+      break;
+    case 'barcodes':
+      data = getBarcodes();
+      filename = 'cable_barcodes';
+      break;
+    case 'all':
+      exportAllData();
+      return;
+    default:
+      showMessage(getText('export_failed'), 'error');
+      return;
   }
+  
+  if (data.length === 0) {
+    showMessage(getText('no_data'), 'info');
+    return;
+  }
+  
+  const csv = convertToCSV(data);
+  downloadCSV(csv, filename);
+  
+  showMessage(getText('export_success'), 'success');
 }
 
-// Convert array of objects to CSV
-function convertToCSV(objArray) {
-  if (objArray.length === 0) {
-    return '';
-  }
+// Convert data to CSV format
+function convertToCSV(data) {
+  if (data.length === 0) return '';
   
-  const headers = Object.keys(objArray[0]);
-  const headerRow = headers.join(',');
-  
-  const rows = objArray.map(obj => {
-    return headers.map(key => {
-      // Handle values with commas by wrapping in quotes
-      const value = obj[key] !== undefined ? obj[key].toString() : '';
-      return value.includes(',') ? `"${value}"` : value;
+  const header = Object.keys(data[0]).join(',');
+  const rows = data.map(item => {
+    return Object.values(item).map(value => {
+      // Handle complex objects by converting to JSON
+      if (typeof value === 'object' && value !== null) {
+        return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+      }
+      // Handle strings with commas or quotes
+      if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
     }).join(',');
-  });
+  }).join('\n');
   
-  return [headerRow, ...rows].join('\n');
+  return `${header}\n${rows}`;
 }
 
 // Download CSV file
-function downloadCSV(csvData, filename) {
-  const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+function downloadCSV(csv, filename) {
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  
   const url = URL.createObjectURL(blob);
+  
   link.setAttribute('href', url);
-  link.setAttribute('download', filename);
+  link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`);
   link.style.visibility = 'hidden';
   
   document.body.appendChild(link);
@@ -196,47 +83,146 @@ function downloadCSV(csvData, filename) {
   document.body.removeChild(link);
 }
 
-// Export inventory data
-function exportInventoryData() {
-  const inventory = getInventory();
+// Import data from CSV file
+function importData() {
+  const importType = document.getElementById('import-type').value;
+  const fileInput = document.getElementById('import-file');
   
-  if (inventory.length === 0) {
-    showMessage(getText('no_inventory_data'), 'error');
+  if (!fileInput.files || fileInput.files.length === 0) {
+    showMessage(getText('select_file'), 'error');
     return;
   }
   
-  const csvData = convertToCSV(inventory);
-  downloadCSV(csvData, 'cable_inventory.csv');
+  const file = fileInput.files[0];
+  const reader = new FileReader();
   
-  showMessage(getText('inventory_exported'), 'success');
+  reader.onload = function(e) {
+    const contents = e.target.result;
+    const data = parseCSV(contents);
+    
+    if (!data || data.length === 0) {
+      showMessage(getText('import_failed'), 'error');
+      return;
+    }
+    
+    switch(importType) {
+      case 'inventory':
+        saveInventory(data);
+        loadInventoryData();
+        break;
+      case 'cable-types':
+        saveCableTypes(data);
+        loadCableTypesData();
+        break;
+      case 'deliveries':
+        saveDeliveries(data);
+        loadDeliveriesData();
+        break;
+      case 'checkout':
+        saveCheckoutHistory(data);
+        loadCheckoutHistory();
+        break;
+      case 'barcodes':
+        saveBarcodes(data);
+        break;
+      default:
+        showMessage(getText('import_failed'), 'error');
+        return;
+    }
+    
+    showMessage(getText('import_success'), 'success');
+    fileInput.value = '';
+    
+    // Update related UI components
+    updateLowStockTable();
+    loadDashboardData();
+    if (typeof updateCableTypeSelects === 'function') {
+      updateCableTypeSelects();
+    }
+  };
+  
+  reader.onerror = function() {
+    showMessage(getText('import_failed'), 'error');
+  };
+  
+  reader.readAsText(file);
 }
 
-// Export checkout history data
-function exportCheckoutData() {
-  const history = getCheckoutHistory();
+// Parse CSV to array of objects
+function parseCSV(csv) {
+  // Basic CSV parsing - could be improved for handling quoted fields, etc.
+  const lines = csv.split('\n');
+  const headers = lines[0].split(',');
   
-  if (history.length === 0) {
-    showMessage(getText('no_checkout_data'), 'error');
-    return;
+  const result = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    const values = parseCSVLine(line);
+    if (values.length !== headers.length) {
+      console.error(`Mismatch in CSV line ${i}:`, line);
+      continue;
+    }
+    
+    const obj = {};
+    headers.forEach((header, index) => {
+      let value = values[index];
+      
+      // Try to detect and parse JSON objects
+      if (value && 
+          ((value.startsWith('{') && value.endsWith('}')) || 
+           (value.startsWith('[') && value.endsWith(']')))) {
+        try {
+          value = JSON.parse(value);
+        } catch (e) {
+          // Not valid JSON, keep as string
+        }
+      } 
+      // Try to convert numbers
+      else if (value && !isNaN(value) && value.trim() !== '') {
+        if (value.includes('.')) {
+          value = parseFloat(value);
+        } else {
+          value = parseInt(value);
+        }
+      }
+      
+      obj[header] = value;
+    });
+    
+    result.push(obj);
   }
   
-  const csvData = convertToCSV(history);
-  downloadCSV(csvData, 'checkout_history.csv');
-  
-  showMessage(getText('checkout_exported'), 'success');
+  return result;
 }
 
-// Export barcode data
-function exportBarcodeData() {
-  const barcodes = getBarcodes();
+// Parse a CSV line, handling quoted fields
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
   
-  if (barcodes.length === 0) {
-    showMessage(getText('no_barcode_data'), 'error');
-    return;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      // Check if it's an escaped quote
+      if (i + 1 < line.length && line[i + 1] === '"') {
+        current += '"';
+        i++; // Skip the next quote
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
   }
   
-  const csvData = convertToCSV(barcodes);
-  downloadCSV(csvData, 'cable_barcodes.csv');
-  
-  showMessage(getText('barcodes_exported'), 'success');
+  result.push(current);
+  return result;
 }
